@@ -5,11 +5,11 @@
 
 #pragma region ________________________________ Constants
 
-const uint8_t MAX_POINTS = 2;   // Мах количество точек
+const uint8_t MAX_POINTS = 3; //2  // Мах количество точек
 const uint8_t BROADCAST = MAX_POINTS;
 const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-// String strMAColon[MAX_POINTS] = {  
+// String strMAColon[MAX_POINTS] = {
 //    "b0:a7:32:30:48:8c",                    // МАС адрес базы красых в формате строки "B0:A7:32:2A:BA:10" (ESP32, black, 30 pin)
 //    "e4:65:b8:0b:46:ec"                     // МАС адрес базы синих в формате строки "B0:A7:32:2A:BA:10" (ESP32, pink, 38 pin)
 // };
@@ -83,7 +83,7 @@ void TaskMain(void *pvParameters) {
                 }
                 break;
 
-            case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса 
+            case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
                 tmp = dialogYesNo(" USED OLD SETTINGS? ");
                 if (DLG_NO == tmp)
                     G_u8DeviceState = ST_EDIT_PARS;
@@ -119,8 +119,8 @@ void TaskMain(void *pvParameters) {
                 break;
             case ST_DOMIN:
             case ST_DOMIN_PRO:
-                if (Domination(&param_list, &winner)) G_u8DeviceState = ST_RESULT_SCREEN; 
-                break;              
+                if (Domination(&param_list, &winner)) G_u8DeviceState = ST_RESULT_SCREEN;
+                break;
 
             case ST_BOMB:
                 if (Bomb(&param_list, &winner)) G_u8DeviceState = ST_RESULT_SCREEN;
@@ -178,7 +178,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
     // помещаем элемент в конец очереди и не ждем, если очередь переполнена
     if (xQueueSend(queue, &evt, 0) != pdPASS)
     {
-        log_i("Receive queue overflow");  
+        log_i("Receive queue overflow");
     }
 }
 
@@ -192,16 +192,16 @@ bool connectToWiFi() {
 
     if (esp_now_register_send_cb(OnDataSent) != ESP_OK) {
         log_e("Failed esp_now_register_send_cb");
-        return false;  
+        return false;
     }
 
-    peerInfo.channel = 1; 
+    peerInfo.channel = 1;
     peerInfo.encrypt = false;
 
 
     // memcpy(peerInfo.peer_addr, broadcastMAC, 6);
 
-    // // Add broadcast peer 
+    // // Add broadcast peer
     // if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     //     log_e("Failed to add peer with broadcastMAC");
     //     return false;
@@ -212,7 +212,7 @@ bool connectToWiFi() {
         // Register peer
         // Последним в массиве МАС адресов ДОЛЖЕН БЫТЬ broadcast !!!
         memcpy(peerInfo.peer_addr, G_aru8MACs[peer], 6);
-        // Add peer 
+        // Add peer
         if (esp_now_add_peer(&peerInfo) != ESP_OK) {
             log_e("Failed to add peer %d", peer);
             return false;
@@ -222,7 +222,7 @@ bool connectToWiFi() {
     // Register for a callback function that will be called when data is received
     if (esp_now_register_recv_cb(OnDataRecv) != ESP_OK) {
         log_e("Failed esp_now_register_recv_cb");
-        return false;  
+        return false;
     }
     return true;
 }
@@ -261,16 +261,16 @@ void TaskWiFi(void *pvParameters) {
                     else
                     {
                         xTaskNotify(hTaskMain, NTF_ERROR_WIFI, eSetBits);
-                        st = 5;   
+                        st = 5;
                     }
                 }
                 break;
-        
+
 
             case 1:      // Ожидание уведомления от главной задачи
 
                 // ждем событие передать сообщение или отключить WIFI
-                // Значение слово события возвращается в rv, которое затем проверяется и в зависимости от того, какой 
+                // Значение слово события возвращается в rv, которое затем проверяется и в зависимости от того, какой
                 // установленного бита(ов), мы выполняем команду.
                 // esp_err_t result;
                 rc = xTaskNotifyWait(0, NTF_STOP_WIFI | NTF_SEND_WIFI, &rv, 0);
@@ -278,7 +278,7 @@ void TaskWiFi(void *pvParameters) {
                 if (rc == pdTRUE) {
                     if (rv & NTF_STOP_WIFI)
                         st = 4;
-                    
+
                     if (rv & NTF_SEND_WIFI) {
                         // recv_evt_evt.msg
                         // Send message via ESP-NOW
@@ -299,8 +299,8 @@ void TaskWiFi(void *pvParameters) {
                         case ESPNOW_SEND_CB:
                             if (evt.status == ESP_NOW_SEND_SUCCESS) {
                                 log_i("ESP_NOW_SEND_SUCCESS");
-                                send_evt.status |= MSG_SEND_OK;                             
-                                // if (evt.msg.cmd == PING) 
+                                send_evt.status |= MSG_SEND_OK;
+                                // if (evt.msg.cmd == PING)
                                 if (send_evt.msg.cmd == PING)
                                     // Запускаем таймер ожидания ответного сообщения
                                     u32AckWaitTimer = xTaskGetTickCount();
@@ -319,12 +319,12 @@ void TaskWiFi(void *pvParameters) {
                             send_evt.status |= MSG_RECV_OK;
                             log_i("RECV ACK MSG SUCCESS");
                             st++;
-                            break;                            
-                    }    
+                            break;
+                    }
                 }
                 else if (send_evt.status & MSG_SEND_OK && (xTaskGetTickCount() - u32AckWaitTimer > 2000)) {
                     xTaskNotify(hTaskMain, NTF_SEND_FINAL, eSetBits);
-                    st = 1;    
+                    st = 1;
                 }
                 break;
 
@@ -345,7 +345,7 @@ void TaskWiFi(void *pvParameters) {
                 break;
 
             case 5:  // Ошибка подключения WiFi
-                break;  
+                break;
     }
 
     if (xTaskGetTickCount() - u32LinkLEDTime > 50 && xLink == LED_ON)
@@ -353,7 +353,7 @@ void TaskWiFi(void *pvParameters) {
         xLink = LED_OFF;
         digitalWrite(LINK_LED_PIN, xLink);
     }
-    
+
   }
 }
 
@@ -393,7 +393,7 @@ void TaskWiFi(void *pvParameters) {
       }
       else
       {
-        xTaskNotify(hTaskMain, NTF_ERROR_WIFI, eSetBits);          
+        xTaskNotify(hTaskMain, NTF_ERROR_WIFI, eSetBits);
       }
     }
     else
@@ -405,7 +405,7 @@ void TaskWiFi(void *pvParameters) {
           case ED_ESPNOW_SEND_CB:
             ed_espnow_event_send_cb_t *send_cb = &evt.info.send_cb;
             is_broadcast = IS_BROADCAST_ADDR(send_cb->mac_addr);
-            break;  
+            break;
 
         }
       }
@@ -415,7 +415,7 @@ void TaskWiFi(void *pvParameters) {
       // s = xQueueReceive(queue_out, &qitem, 0);
       s = xQueueReceive(queue, &qitem, pdMS_TO_TICKS(500));
       if (s == pdPASS)
-      { 
+      {
         esp_now_send(G_aru8MACs[qitem.data[0]], (uint8_t *) &qitem, sizeof(msg_esp_now_t));
       }
     }
@@ -430,8 +430,8 @@ void TaskWiFi(void *pvParameters) {
 
 void setup(void) {
 
-    // Serial.begin(115200); 
-  
+    // Serial.begin(115200);
+
     log_i("Gamepad start.");
 
 // uint32_t sec;
@@ -607,7 +607,7 @@ preferences.begin("my-app", true);
     }
 
     xTaskCreatePinnedToCore(TaskMain, "TaskMain", 20000, NULL, 1, &hTaskMain, 1);
-    xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0); 
+    xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
 }
 
 #pragma endregion Setup_function

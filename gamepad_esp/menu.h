@@ -52,12 +52,12 @@ int8_t setGameMode(int8_t mode) {
     | Domination Pro     |
     | Bomb mode          |
     | Control Point      |
-    +--------------------+ 
+    +--------------------+
     */
     static uint8_t st = 0;
     static uint8_t cur;
     static uint8_t page;
- 
+
     switch (st) {
         case 0:
             cur = mode;
@@ -66,7 +66,7 @@ int8_t setGameMode(int8_t mode) {
 
         case 1:            // отрисовка страницы режимов
             lcd.clear();
-            page = cur / LCD_ROWS;  
+            page = cur / LCD_ROWS;
             for (uint8_t row = 0; row < LCD_ROWS; row++) {
                 if ((page*LCD_ROWS + row) < NUM_MODES)
                 {
@@ -84,7 +84,7 @@ int8_t setGameMode(int8_t mode) {
             char key = kpd.getKey();
             if ('A' == key || 'B' == key || 'D' == key) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
-                
+
                 if ('D' == key) {                               // D - select
                     st = 0;
                     return cur;
@@ -101,7 +101,7 @@ int8_t setGameMode(int8_t mode) {
 
                 if (page == cur / LCD_ROWS)
                 {
-                    // page not change - draw cursor in new position on the 
+                    // page not change - draw cursor in new position on the
                     lcd.setCursor(0, cur % LCD_ROWS);
                     lcd.write('>');
                 }
@@ -110,7 +110,7 @@ int8_t setGameMode(int8_t mode) {
             }
             break;
     }
-    return -1; 
+    return -1;
 }
 
 
@@ -146,10 +146,10 @@ bool editIntParameter(Parameter *par) {
 
     switch (st) {
         case 0:
-            lcd.clear();           
+            lcd.clear();
             // имя параметра
             lcd.print(par->getName());
-            
+
             // мах длина значения параметра
             max_chars = par->getMaxLengtn();
 
@@ -163,17 +163,17 @@ bool editIntParameter(Parameter *par) {
 
             lcd.setCursor(5, 3);
             lcd.print(F("[D] - exit"));
-            
+
             // значение параметра
             inputString = String(par->getIntValue());
             index = 0;
             redrawValueParameter(inputString, max_chars, index);
 
             lcd.blink();
-            st++;  
+            st++;
             break;
-        
-        case 1:       
+
+        case 1:
             key = kpd.getKey();
             if (key == NO_KEY) break;
             if (key >= '0' && key <= '9')  {
@@ -183,7 +183,7 @@ bool editIntParameter(Parameter *par) {
                     inputString = key;
                 else if (inputString.length() < max_chars)            // если не превысили допустимую длину параметра в символах
                     inputString += key;
-        
+
                 if (++index >= max_chars)
                     index = 0;
 
@@ -212,7 +212,7 @@ bool editStrParameter(Parameter *par) {
     // Редактирование параметра строкового типа                                   |
     // par - указатель на редактируемый параметр                                  |
     // Возвращает: true-редактирование/просмотр завершен                          |
-    //----------------------------------------------------------------------------+ 
+    //----------------------------------------------------------------------------+
      01234567890123456789
     +--------------------+
     |Password            |
@@ -230,9 +230,9 @@ bool editStrParameter(Parameter *par) {
 
     switch (st) {
         case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            lcd.clear();           
+            lcd.clear();
             lcd.print(par->getName());
-            max_chars = par->getMaxLengtn(); 
+            max_chars = par->getMaxLengtn();
             inputString = par->getStringValue();
 
             lcd.setCursor(0, 3);
@@ -242,12 +242,12 @@ bool editStrParameter(Parameter *par) {
             index = 0;
             redrawValueParameter(inputString, max_chars, index);
             lcd.blink();
-            st++;  
+            st++;
             break;
 
-        case 1:                     // редактирование     
+        case 1:                     // редактирование
             key = kpd.getKey();
-            if (key == 'D') {                  // выход из редактирования  
+            if (key == 'D') {                  // выход из редактирования
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
                 if (par->changed) {
                     char buf[MAX_PARAMETER_VALUE_STRING_SIZE];
@@ -281,7 +281,7 @@ bool editMACParameter(Parameter *par) {
     // Редактирование параметра МАС адреса                                        |
     // par - указатель на редактируемый параметр                                  |
     // Возвращает: true-редактирование/просмотр завершен                          |
-    //----------------------------------------------------------------------------+ 
+    //----------------------------------------------------------------------------+
      01234567890123456789
     +--------------------+
     |RED team MAC        |
@@ -298,11 +298,11 @@ bool editMACParameter(Parameter *par) {
 
     switch (st) {
         case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            lcd.clear();           
+            lcd.clear();
             lcd.print(par->getName());
-            max_chars = par->getMaxLengtn(); 
+            max_chars = par->getMaxLengtn();
             inputString = par->getStringValue();
-            st++;  
+            st++;
             break;
 
         case 1:                 // отрисовка имени, значения параметра, строки подсказки
@@ -311,10 +311,10 @@ bool editMACParameter(Parameter *par) {
             lcd.print(F("C -> edit  D -> exit"));
             index = 0;
             redrawValueParameter(inputString, max_chars, index);
-            st++;  
+            st++;
             break;
 
-        case 2:                     // выход из редактирования или вход в редактирование       
+        case 2:                     // выход из редактирования или вход в редактирование
             key = kpd.getKey();
             if (key == 'C') {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
@@ -337,7 +337,7 @@ bool editMACParameter(Parameter *par) {
             }
             break;
 
-        case 3:             // редактирование       
+        case 3:             // редактирование
             key = kpd.getKey();
             if (key != NO_KEY) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
@@ -359,8 +359,8 @@ bool editMACParameter(Parameter *par) {
                 if (index == max_chars)
                 {
                     lcd.noBlink();
-                    st = 1; 
-                }   
+                    st = 1;
+                }
             }
             break;
     }
@@ -380,28 +380,28 @@ void drawIntValueParameter(uint32_t ival, uint8_t row) {
     // switch (unit) {
     //     case 's':
     //         lcd.print(F("seconds"));
-    //         break; 
+    //         break;
     //     case 'm':
     //         lcd.print(F("minutes"));
     //         break;
-    // }   
+    // }
     lcd.setCursor(0, row);
     lcd.print(ival);
 }
 
 
 int8_t EditParams(ListParameter* params) {
-    /*----------------------------------------------------------------------------+  
+    /*----------------------------------------------------------------------------+
     // Редактирование параметров выбранного режима игры                           |
     // Возвращает: 0-редактирование не завершено; 1-параметры изменены; 2-просмотр|
-    //----------------------------------------------------------------------------+   
+    //----------------------------------------------------------------------------+
      01234567890123456789 01234567890123456789
     +--------------------+--------------------+
     |>Game_time          |>RED_team_MAC       |
     | Activated_time     | BLUE_team_MAC      |
     | Bomb_time          |                    |
     | Password           |                    |
-    +--------------------+--------------------+ 
+    +--------------------+--------------------+
     */
     static uint8_t st = 0;
     static uint8_t NUMS;                                    // число параметров в режиме
@@ -409,7 +409,7 @@ int8_t EditParams(ListParameter* params) {
     static uint8_t page;                                    // номер страницы параметров (0..NUMS-1/4)
 
     char key;
-    // static char sval[MAX_PARAMETER_VALUE_STRING_SIZE];      // значение параметра строкового типа  
+    // static char sval[MAX_PARAMETER_VALUE_STRING_SIZE];      // значение параметра строкового типа
     static Parameter *par;
 
     switch (st) {
@@ -447,7 +447,7 @@ int8_t EditParams(ListParameter* params) {
                     }
                     return 2;
                 }
-                
+
                 if ('D' == key) {                               // переход к редактированию текущего параметра
                     par = params->parameters[cur];
                     st++;
@@ -465,7 +465,7 @@ int8_t EditParams(ListParameter* params) {
                     cur = cur < NUMS - 1? cur + 1 : 0;
 
                 if (page == cur / LCD_ROWS) {
-                    // page not change - draw cursor in new position on the 
+                    // page not change - draw cursor in new position on the
                     lcd.setCursor(0, cur % LCD_ROWS);
                     lcd.write('>');
                 }
@@ -484,21 +484,21 @@ int8_t EditParams(ListParameter* params) {
                     break;
                 case 'm':
                     st = 6;
-                    break;                                        
+                    break;
             }
             break;
-            
-        case 4:     // редактирование значения параметра целого типа 
-            if (editIntParameter(par))   
+
+        case 4:     // редактирование значения параметра целого типа
+            if (editIntParameter(par))
                 st = 1;
             break;
 
-        case 5:     // редактирование значения параметра строкового типа 
+        case 5:     // редактирование значения параметра строкового типа
             if (editStrParameter(par))
                 st = 1;
             break;
-        
-        case 6:     // редактирование значения MAC адреса 
+
+        case 6:     // редактирование значения MAC адреса
             if (editMACParameter(par))
                 st = 1;
             break;
@@ -516,7 +516,7 @@ uint8_t dialogYesNo(String question) {
   {
     lcd.clear();
     lcd.setCursor(0, 1);
- //         //"01234567890123456789"                 
+ //         //"01234567890123456789"
     lcd.print(question);
     lcd.setCursor(0, 3);
     lcd.print("[*] - NO   [#] - YES");
@@ -526,7 +526,7 @@ uint8_t dialogYesNo(String question) {
   {
     key = kpd.getKey();
     if (key == '*' || key == '#')
-    { 
+    {
       tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
       st = 0;
       return key == '*' ? DLG_NO : DLG_YES;
@@ -537,7 +537,7 @@ uint8_t dialogYesNo(String question) {
 
 
 void showMsg(String line1, String line2, uint32_t tm = 2000) {
-  lcd.clear();                
+  lcd.clear();
   lcd.print(line1);
   lcd.setCursor(0, 2);
   lcd.print(line2);
@@ -546,7 +546,7 @@ void showMsg(String line1, String line2, uint32_t tm = 2000) {
 
 
 bool startWiFi() {
-  // Подключить WiFi, дождаться уведомления об успешном создании WiFi AP 
+  // Подключить WiFi, дождаться уведомления об успешном создании WiFi AP
   static uint8_t st = 0;
   BaseType_t rc;
   uint32_t rv;
@@ -557,7 +557,7 @@ bool startWiFi() {
     st++;
   }
   else
-  {                                           
+  {
     rc = xTaskNotifyWait(0,NTF_START_WIFI,&rv,0);   // ждем уведомления об успешном создании WiFi
     if (rc == pdTRUE)
     {
@@ -570,7 +570,7 @@ bool startWiFi() {
 }
 
 
-bool pressAnyKey() {    
+bool pressAnyKey() {
     /* ожидание нажатия кнопки "#"" для старта игры
      01234567890123456789
     +--------------------+
@@ -589,7 +589,7 @@ bool pressAnyKey() {
     switch (st) {
         case 0:
             lcd.clear();
-            lcd.setCursor(2, 0);               
+            lcd.setCursor(2, 0);
             lcd.print(F("Press # to start"));
             lcd.setCursor(0, 2);
             lcd.print(F(" RED:"));
@@ -605,7 +605,7 @@ bool pressAnyKey() {
                 lcd.setCursor(0, 1);
                 lcd.print("TX power: ");
                 int a = WiFi.getTxPower();
-                lcd.print(a);    
+                lcd.print(a);
                 point = MAX_POINTS;      // текущая точка для зондирования
                 st++;
             }
@@ -632,7 +632,7 @@ bool pressAnyKey() {
 
                 tm = xTaskGetTickCount();
                 st++;
-            } 
+            }
             break;
 
         case 4:             // ждем 4 с, пока проиграет трек
@@ -655,7 +655,7 @@ bool pressAnyKey() {
 
     if (st > 1) {
         key = kpd.getKey();
-        if (key == '#' && !start) { 
+        if (key == '#' && !start) {
             if (G_arPeerStatus[0] == PLAYER_READY && G_arPeerStatus[1] == PLAYER_READY) {
             // if (G_arPeerStatus[0] == PLAYER_READY) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
@@ -669,7 +669,7 @@ bool pressAnyKey() {
 }
 
 
-bool delayForStart() {    
+bool delayForStart() {
     /* задержка перед стартом игры
      01234567890123456789
     +--------------------+
@@ -685,7 +685,7 @@ bool delayForStart() {
 
     switch (st) {
         case 0:                                         // чтобы не создавать новый, используем таймер игры для задержки автозапуска
-            lcd.clear();             
+            lcd.clear();
             lcd.print(F(" Left seconds to go"));
             game_timer.SetTime(DELAY_START);
             game_timer.Start();
@@ -724,7 +724,7 @@ bool delayForStart() {
                 st = 0;
                 return true;
             }
-            break;            
+            break;
     }
     fEmpty = sendESP_NOW();                             // передача сообщения
     return false;
@@ -753,14 +753,14 @@ void buildParameterList(modes mode, ListParameter* params) {
             break;
     }
     params->addStringParameter("RED team MAC", 'n', 17, "00:00:00:00:00:00");
-    params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");    
+    params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");     params->addStringParameter("LED strip MAC", 'n', 17, "00:00:00:00:00:00")
 }
 
 
 void ParamsFromMemoToPlay(ListParameter* params) {
-    //----------------------------------------------------------------------------+  
+    //----------------------------------------------------------------------------+
     // Пересчет параметров для выбранного режима игры                             |
-    // В целях экономии EEPROM, параметры хранятся в более крупных единицах:      |    
+    // В целях экономии EEPROM, параметры хранятся в более крупных единицах:      |
     //  - время игры в минутах, - время активации в секундах.                     |
     // Перед началом игры необходимо вызвать эту функцию для пересчета как        |
     // минимум этих параметров в мс.                                              |
@@ -769,7 +769,7 @@ void ParamsFromMemoToPlay(ListParameter* params) {
     String name_par;
     for (uint8_t i = 0; i < params->Count; i++) {
         name_par = params->parameters[i]->getName();
-        
+
         if (name_par == "Game time")
             G_u32GameTimeMS = params->getIntParameter("Game time") * 60000UL;
         else if (name_par == "Activated time")

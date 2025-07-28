@@ -48,9 +48,9 @@ void display3DigitsInt(uint8_t col, uint8_t row, uint16_t var, char zero = ' ') 
 }
 
 
-uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {   
+uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
     if (button.isReleased()) {
-        *progress = 0; 
+        *progress = 0;
         *time = xTaskGetTickCount();
         return 0;
     }
@@ -65,6 +65,8 @@ uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
     uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, LCD_H_DOTS);
 
     while (*progress < new_progress) {
+		// тут надо сделать логику заполнения ленты(отправлять значение)
+		sendESP_NOW_ToMAC(G_aru8MACs[2])
         lcd.setCursor(*progress / 5, 1);
         lcd.print((char)(*progress % 5));
         tone(BUZZER_PIN, *progress * 25);
@@ -88,7 +90,7 @@ void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
         if (send_event->status & MSG_RECV_OK) {
             log_i("сообщение принято");
             if (point == recv_msg->data[0])
-                G_arPeerStatus[point] = recv_msg->data[1];      // если сообщение принято  
+                G_arPeerStatus[point] = recv_msg->data[1];      // если сообщение принято
         }
         // отрисовка состояния точки
         lcd.setCursor(6, 2 + point);
@@ -97,7 +99,7 @@ void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
 }
 
 
-bool sendESP_NOW() {      
+bool sendESP_NOW() {
     //----------------------------------------------------------------------------+
     //                  Передать сообщение через ESPNOW                           |
     //  return true, если передача завершена, иначе false                         |
@@ -121,6 +123,41 @@ bool sendESP_NOW() {
     return false;
 }
 
+bool sendESP_NOW_ToMAC(const uint8_t *mac_addr, espnow_msg_t *msg) {
+    //----------------------------------------------------------------------------+
+    //         Передать сообщение через ESP-NOW на указанный MAC-адрес            |
+    //  mac_addr - целевой MAC-адрес (6 байт)                                     |
+    //  msg - указатель на структуру сообщения espnow_msg_t                       |
+    //  return true, если передача завершена, иначе false                         |
+    //----------------------------------------------------------------------------+
+    static uint8_t st = 0;
+    uint32_t rv;
+
+    if (st == 0) {
+        if (msg == NULL || mac_addr == NULL) {
+            log_e("Invalid MAC address or message");
+            return false;
+        }
+
+        send_evt.msg = *msg; // Копируем сообщение
+        send_evt.status = MSG_RDY_TO_SEND;
+        if (esp_now_send(mac_addr, (uint8_t *) &send_evt.msg, sizeof(espnow_msg_t)) == ESP_OK) {
+            send_evt.status |= MSG_PUT_SEND_CB;
+            xTaskNotify(hTaskWiFi, NTF_SEND_WIFI, eSetBits);
+            st++;
+        } else {
+            log_e("Failed to send ESP-NOW message");
+            return false;
+        }
+    }
+    else if (xTaskNotifyWait(0, NTF_SEND_FINAL, &rv, 0) == pdTRUE) {
+        send_evt.status |= MSG_SEND_FINAL;
+        parseMessage(&send_evt, &recv_evt.msg);
+        st = 0;
+        return true;
+    }
+    return false;
+}
 
 void RenderStaticView() {
     lcd.setCursor(0, 0);
@@ -131,7 +168,7 @@ void RenderStaticView() {
             lcd.print(F("                    "));
             lcd.setCursor(6, 1);
             showTimeHMS(lcd, game_timer.Secs());
-            
+
             lcd.setCursor(5, 2);
             lcd.print(F("     "));
             lcd.setCursor(5, 3);
@@ -140,7 +177,7 @@ void RenderStaticView() {
             if (G_u8Team != NOONE)
             {
                 lcd.setCursor(5, 1 + G_u8Team);
-                lcd.print(F("====>"));    
+                lcd.print(F("====>"));
             }
             break;
 
@@ -177,12 +214,12 @@ void RenderStaticView() {
             lcd.setCursor(0, 1);
             lcd.print(F("Game time:  "));
             lcd.setCursor(12, 1);
-            showTimeHMS(lcd, game_timer.Secs());            
+            showTimeHMS(lcd, game_timer.Secs());
             break;
     }
 
     digitalWrite(RED_LED_PIN, G_u8Team == RED);
-    digitalWrite(BLUE_LED_PIN, G_u8Team == BLUE); 
+    digitalWrite(BLUE_LED_PIN, G_u8Team == BLUE);
 }
 
 
@@ -205,9 +242,9 @@ bool enterPassword(bool *fCursorChange) {
     switch (st) {
         case 0:                 // ожидание нажатия любой кнопки - отрисовка приглашения
             if (kpd.getKey() != NO_KEY) {
-                tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION); 
+                tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
                 lcd.setCursor(0, 0);
-                lcd.print(F("Enter PASS> ********"));           
+                lcd.print(F("Enter PASS> ********"));
                 inputString = "********";
                 index = 0;
                 lcd.setCursor(start_pos + index, 0);
@@ -305,7 +342,7 @@ bool Domination(ListParameter* params, team_t* winner) {
             lcd.setCursor(0, 2);
             lcd.print(team_names[RED]);
             lcd.setCursor(0, 3);
-            lcd.print(team_names[BLUE]);          
+            lcd.print(team_names[BLUE]);
 
             // таймеры команд
             lcd.setCursor(12, 2);
@@ -354,7 +391,7 @@ bool Domination(ListParameter* params, team_t* winner) {
                     else if (blueValue >= 100) {
                         timerBlue.Start();
                         timerRed.Stop();
-                        G_u8Team = BLUE;      
+                        G_u8Team = BLUE;
                     }
 
                     outMsg.cmd = PLAY_TRACK;
@@ -386,19 +423,19 @@ bool Domination(ListParameter* params, team_t* winner) {
                 st = 1;
             break;
 
-        case 4:  // ждем отжатия обоих кнопок      
+        case 4:  // ждем отжатия обоих кнопок
             if (!redValue && !blueValue)
                 st = 1;
             break;
 
-        case 5:  // время игры истекло   
+        case 5:  // время игры истекло
             if (timerRed.GetTime() == timerBlue.GetTime())
                 *winner = NOONE;
             else
                 *winner = timerRed.GetTime() > timerBlue.GetTime() ? RED : BLUE;
             st++;
 
-        case 6:    
+        case 6:
             if (fEmpty) {
                 st = 0;
                 return true;
@@ -420,13 +457,13 @@ bool Domination(ListParameter* params, team_t* winner) {
             showTimeHMS(lcd, timerBlue.Secs());
             st = 5;
         }
-        else if (st != 3) {  
+        else if (st != 3) {
             if (game_timer.Secs() != secs) {
                 lcd.setCursor(6, 1);
                 secs = game_timer.Secs();
                 showTimeHMS(lcd, secs);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
-            }   
+            }
 
             if (G_u8Team == RED) {
                 timerRed.Tick();
@@ -464,7 +501,7 @@ bool Domination(ListParameter* params, team_t* winner) {
 bool Bomb(ListParameter* params, team_t* winner) {
     //----------------------------------------------------------------------------+
     // При старте таймер игры остановлен. При нажатии любой кнопки на клавиатуре, |
-    // на дисплее появляется приглашение для ввода пароля. Игрок вводит пароль и  |    
+    // на дисплее появляется приглашение для ввода пароля. Игрок вводит пароль и  |
     // если он верный, разрешается активация заряда нажатием любой из кнопок.     |
     // После активации запускается таймер игры и таймер времени заряда.|
     // Также высвечивается команда, активировавшая заряд. Заряд можно деактивиро- |
@@ -476,8 +513,8 @@ bool Bomb(ListParameter* params, team_t* winner) {
      01234567890123456789 01234567890123456789 01234567890123456789
     +--------------------+--------------------+--------------------+--------------------+
     |      BOMB MODE     |Enter PASS> ********|        ARMING      |      BOMB MODE     |
-    |Game time:  00:15:20|Game time:  00:15:20|***************     |Game time:  00:15:20| 
-    |                    |   BLUE activated   |                    |   BLUE activated   | 
+    |Game time:  00:15:20|Game time:  00:15:20|***************     |Game time:  00:15:20|
+    |                    |   BLUE activated   |                    |   BLUE activated   |
     |                    |Bomb time:  00:01:59|                    |Bomb time:  00:01:59|
     +--------------------+--------------------+--------------------+--------------------+*/
     static uint8_t st = 0;
@@ -537,7 +574,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
             activated = false;
             st++;
             break;
-    
+
         case 1:    // отрисовка команды-владельца gamepad
             RenderStaticView();
             if (*winner == NOONE)
@@ -545,7 +582,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
             else
                 st = 7;
             break;
-        
+
         case 2:    // ожидание авторизации
             if (!pass_ok) {
                 pass_ok = enterPassword(&fCursorChange);
@@ -616,7 +653,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
             }
             break;
 
-        case 5:  // ждем отжатия обоих кнопок      
+        case 5:  // ждем отжатия обоих кнопок
             if (!redValue && !blueValue) {
                 pass_ok = false;        // для последующих активации/деактивации снова потребуется ввод пароля
                 st = 1;
@@ -631,7 +668,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
             st++;
             break;
 
-        case 7:     // ожидание завершения передачи сообщений    
+        case 7:     // ожидание завершения передачи сообщений
             if (fEmpty) {
                 st = 0;
                 return true;
@@ -647,7 +684,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
         // if (u8BombState == BS_RUN)
         if (activated)
             bomb_timer.Tick();
-        
+
         // Если время игры истекло или таймер заряда обнулился
         if (!game_timer.GetTime() || !bomb_timer.GetTime()) {
             game_timer.Stop();
@@ -658,18 +695,18 @@ bool Bomb(ListParameter* params, team_t* winner) {
             showTimeHMS(lcd, bomb_timer.Secs());
             st = 6;
         }
-        else if (st != 4) {  
+        else if (st != 4) {
             if (game_timer.Secs() != secs) {
                 lcd.setCursor(12, 1);
                 secs = game_timer.Secs();
                 showTimeHMS(lcd, secs);
-                
+
                 // if (u8BombState == BS_RUN) {
                 if (activated) {
                     lcd.setCursor(12, 3);
                     showTimeHMS(lcd, bomb_timer.Secs());
                 }
-    
+
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
                 fCursorChange = true;
             }
@@ -695,7 +732,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
                     i8CheckBombTimeCount--;
                 }
             }
- 
+
         }
     }
     return false;
@@ -704,9 +741,9 @@ bool Bomb(ListParameter* params, team_t* winner) {
 
 // bool Bomb(ListParameter* params, team_t* winner) {
     //----------------------------------------------------------------------------+
-    // При старте игры таймер игры остановлен и дисплей погашен.                  |    
+    // При старте игры таймер игры остановлен и дисплей погашен.                  |
     // При первом нажатии кнопки на клавиатуре, дисплей включается и на экране    |
-    // появляется приглашение для ввода пароля. Игрок вводит пароль и если он     |    
+    // появляется приглашение для ввода пароля. Игрок вводит пароль и если он     |
     // верный - разрешается активация заряда нажатием любой из кнопок. После      |
     // активации запускается таймер игры и таймер отсчета времени до конца заряда.|
     // Также высвечивается команда, активировавшая заряд. Заряд можно деактивиро- |
@@ -717,8 +754,8 @@ bool Bomb(ListParameter* params, team_t* winner) {
      01234567890123456789 01234567890123456789 01234567890123456789
     +--------------------+--------------------+--------------------+--------------------+
     |      BOMB MODE     |Enter PASS> ********|        ARMING      |      BOMB MODE     |
-    |GAME TIME   00:15:20|GAME TIME   00:15:20|***************     |GAME TIME   00:15:04| 
-    |                    |   BLUE activated   |                    |   BLUE activated   | 
+    |GAME TIME   00:15:20|GAME TIME   00:15:20|***************     |GAME TIME   00:15:04|
+    |                    |   BLUE activated   |                    |   BLUE activated   |
     |                    |BOMB TIME   00:01:59|                    |BOMB TIME   00:01:59|
     +--------------------+--------------------+--------------------+--------------------+*/
 
@@ -765,12 +802,12 @@ bool Bomb(ListParameter* params, team_t* winner) {
             activated = false;
             st++;
             break;
-    
+
         case 1:    // отрисовка команды-владельца gamepad
             RenderStaticView();
             st++;
             break;
-        
+
         case 2:    // ожидание авторизации
             if (!pass_ok) {
                 pass_ok = enterPassword(&fCursorChange);
@@ -844,7 +881,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
                 st = 1;                                         // авторизация сохраняется
             break;
 
-        case 5:  // ждем отжатия обоих кнопок      
+        case 5:  // ждем отжатия обоих кнопок
             if (!redValue && !blueValue) {
                 pass_ok = false;        // для последующих активации/деактивации снова потребуется ввод пароля
                 st = 1;
@@ -860,7 +897,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
             st++;
             break;
 
-        case 7:     // ожидание завершения передачи сообщений    
+        case 7:     // ожидание завершения передачи сообщений
             if (fEmpty) {
                 st = 0;
                 return true;
@@ -876,7 +913,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
         // if (u8BombState == BS_RUN)
         if (activated)
             bomb_timer.Tick();
-        
+
         // Если время игры истекло или таймер заряда обнулился
         if (!game_timer.GetTime() || !bomb_timer.GetTime()) {
             game_timer.Stop();
@@ -887,12 +924,12 @@ bool Bomb(ListParameter* params, team_t* winner) {
             showTimeHMS(lcd, bomb_timer.Secs());
             st = 6;
         }
-        else if (st != 4) {  
+        else if (st != 4) {
             if (game_timer.Secs() != secs) {
                 lcd.setCursor(12, 1);
                 secs = game_timer.Secs();
                 showTimeHMS(lcd, secs);
-                
+
                 // if (u8BombState == BS_RUN) {
                 if (activated) {
                     lcd.setCursor(12, 3);
@@ -913,7 +950,7 @@ bool Bomb(ListParameter* params, team_t* winner) {
                     i8CheckTimeCount--;
                 }
             }
-            
+
         }
     }
     return false;
@@ -981,15 +1018,15 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
                 pressed[i] = false;
                 leaving_time[i] = 0;
                 if (fRandomTime)
-                    lock_time[i] = random(LO_REPEAT_TIME_MS, HI_REPEAT_TIME_MS);    
+                    lock_time[i] = random(LO_REPEAT_TIME_MS, HI_REPEAT_TIME_MS);
                 else
                     lock_time[i] = G_u32RepeatTimeMS;
                 display3DigitsInt(17, i + 2, points[i]);
-                digitalWrite(led_pins[i], pressed[i] ? LED_OFF : LED_ON);   
+                digitalWrite(led_pins[i], pressed[i] ? LED_OFF : LED_ON);
             }
             st++;
             break;
-        
+
         case 1:                                   // ожидание нажатия кнопки
             for (i = 0; i < 2; i++) {
                 buttons[i].read();
@@ -1024,7 +1061,7 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
                     digitalWrite(led_pins[i], LED_OFF);
             }
             break;
-        
+
         case 2:                                   // время игры истекло
             if (points[RED - 1] == points[BLUE - 1])
                 *winner = NOONE;
@@ -1036,7 +1073,7 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
             st++;
             break;
 
-        case 3:     // ожидание завершения передачи сообщений    
+        case 3:     // ожидание завершения передачи сообщений
             if (fEmpty) {
                 st = 0;
                 return true;
@@ -1083,7 +1120,7 @@ void showWinerTeam(team_t winner) {
     // индикация победителя
     switch (G_u8GameMode) {
         case DOMIN:
-            lcd.setCursor(6, 1);    
+            lcd.setCursor(6, 1);
             if (winner == NOONE) {
                 lcd.print(F("  DRAW!     "));
             }
@@ -1101,7 +1138,7 @@ void showWinerTeam(team_t winner) {
             break;
         case BOMB:
         case CTRL_POINT:
-            lcd.setCursor(0, 1);    
+            lcd.setCursor(0, 1);
             if (winner == NOONE)
                             //01234567890123456789
                 lcd.print(F("         DRAW !      "));
@@ -1116,7 +1153,7 @@ void showWinerTeam(team_t winner) {
 
 bool GameOver(team_t winner) {
     /*  Индикация результата игры
-     01234567890123456789 01234567890123456789  
+     01234567890123456789 01234567890123456789
     +--------------------+--------------------+
     |     GAME OVER !    |Press # for new game|
     |     BLUE WIN !     |     BLUE WIN !     |
@@ -1160,7 +1197,7 @@ bool GameOver(team_t winner) {
                 st++;
             }
             break;
-    
+
         case 3:       // мигание сообщения в строке 1 и ожидание нажатия перезапуска
             if (kpd.getKey() == '#') {
                 st = 0;
@@ -1173,11 +1210,11 @@ bool GameOver(team_t winner) {
                 else
                     lcd.print(F("Press # for new game"));
                 tm = xTaskGetTickCount();
-                xFlash = !xFlash;  
+                xFlash = !xFlash;
             }
             break;
     }
-    
+
     if (st < 2) fEmpty = sendESP_NOW();
 
     return false;

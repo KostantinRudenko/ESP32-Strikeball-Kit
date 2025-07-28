@@ -51,11 +51,11 @@ const uint8_t DLG_YES = 2;
 #define COLUMN_NUM  4
 
 char keys[ROW_NUM][COLUMN_NUM] = {
-  {'1','2','3','A'}, 
+  {'1','2','3','A'},
   {'4','5','6','B'},
   {'7','8','9','C'},
   {'*','0','#','D'}
-}; 
+};
 
 #pragma endregion Constants
 
@@ -69,11 +69,11 @@ const int8_t NUM_MODES = CTRL_POINT - DOMIN + 1;                  // число 
 
 enum gstates_t {
     ST_GREET = 0,
-    ST_GAMEMODE, 
-    ST_CHECKPARS, 
-    ST_OLDPARS, 
-    ST_EDIT_PARS, 
-    ST_SAVEPARS, 
+    ST_GAMEMODE,
+    ST_CHECKPARS,
+    ST_OLDPARS,
+    ST_EDIT_PARS,
+    ST_SAVEPARS,
     ST_PARS2PLAY,
     ST_PRESSANYKEY,
     ST_DELAY_START,
@@ -96,7 +96,7 @@ enum point_states_t {
 
 const char *sPointNameStates[5]  = {
   //01234567890123456789
-  //BLUE: 
+  //BLUE:
          "Disconnect    ",
          "Player bad    ",
          "Player busy   ",
@@ -114,10 +114,11 @@ Keypad kpd = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM)
 
 char key;                                 // Буфер клавиатуры
 
-uint8_t G_aru8MACs[MAX_POINTS+1][ESP_NOW_ETH_ALEN] = {  
+uint8_t G_aru8MACs[MAX_POINTS+1][ESP_NOW_ETH_ALEN] = {
     {0,0,0,0,0,0},
     {0,0,0,0,0,0},
-    {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}  
+	{0,0,0,0,0,0}, // Ввести МАС адресс esp которое управляет адресной лентой
+    {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}
 };          // МАС адреса точек
 
 static QueueHandle_t queue;
