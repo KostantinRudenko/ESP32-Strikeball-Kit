@@ -47,7 +47,6 @@ void display3DigitsInt(uint8_t col, uint8_t row, uint16_t var, char zero = ' ') 
     lcd.print(var);
 }
 
-
 uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
     if (button.isReleased()) {
         *progress = 0;
@@ -65,8 +64,15 @@ uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
     uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, LCD_H_DOTS);
 
     while (*progress < new_progress) {
-		// тут надо сделать логику заполнения ленты(отправлять значение)
-		sendESP_NOW_ToMAC(G_aru8MACs[2])
+
+		if (*progress % 10 == 0) {
+			espnow_msg_t msg;
+			msg.cmd = LIGHT_STRIP;
+			msg.data[0] = G_u8Team;
+			msg.data[1] = *process;
+			sendESP_NOW_ToMAC(G_aru8MACs[2], &msg);
+		}
+
         lcd.setCursor(*progress / 5, 1);
         lcd.print((char)(*progress % 5));
         tone(BUZZER_PIN, *progress * 25);

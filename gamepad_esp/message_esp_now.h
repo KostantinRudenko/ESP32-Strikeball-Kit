@@ -41,8 +41,8 @@ typedef struct {
 3. Ожидание уведомления о завершении обмена
 Главная задача:
 3.1 ожидание уведомления NTF_SEND_FINAL от задачи WiFi
-    if (xTaskNotifyWait(0, NTF_SEND_FINAL, &rv, 0) == pdTRUE) 
-3.2 установка флага в статусе события 
+    if (xTaskNotifyWait(0, NTF_SEND_FINAL, &rv, 0) == pdTRUE)
+3.2 установка флага в статусе события
         evt->status |= MSG_SEND_FINAL;
 
 
@@ -60,7 +60,7 @@ WiFi задача:
 направление передачи:   gamepad => base
 u8Cmd = Ping
 u8Data[0] = номер базы 0-RED; 1-BLUE
-u8Data[1] = 
+u8Data[1] =
 
 Ответ    gamepad <= base
 u8Cmd = Ping
@@ -99,6 +99,7 @@ typedef enum {
 
 const uint8_t PING          = 1;
 const uint8_t PLAY_TRACK    = 2;
+const uint8_t LIGHT_STRIP     = 3;
 
 typedef struct {
     uint8_t cmd;            // команда
@@ -118,7 +119,7 @@ espnow_event_t send_evt;
 espnow_event_t recv_evt;
 
 #define		NB_ITEMS	5               // количество отправляемых сообщений в очереди
-// espnow_msg_t q_out_msg [NB_ITEMS];   
+// espnow_msg_t q_out_msg [NB_ITEMS];
 
 	// **	\param [in] size_rec - size of a record in the queue
 	// **	\param [in] nb_recs - number of records in the queue
@@ -127,7 +128,7 @@ espnow_event_t recv_evt;
 	// **	\param [in] pQDat - Pointer to static data queue
 	// **	\param [in] lenQDat - Length of static data queue (in bytes) for static array size check against required size for queue
 	// **	\return nothing
-	
+
 cppQueue q_out_msg(sizeof(espnow_msg_t), NB_ITEMS, IMPLEMENTATION);             // очередь отправляемых сообщений
 
 static TaskHandle_t hTaskWiFi;

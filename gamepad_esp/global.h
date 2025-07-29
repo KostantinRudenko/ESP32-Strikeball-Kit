@@ -117,8 +117,8 @@ char key;                                 // Буфер клавиатуры
 uint8_t G_aru8MACs[MAX_POINTS+1][ESP_NOW_ETH_ALEN] = {
     {0,0,0,0,0,0},
     {0,0,0,0,0,0},
-	{0,0,0,0,0,0}, // Ввести МАС адресс esp которое управляет адресной лентой
-    {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}
+	{0,0,0,0,0,0},
+	{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}
 };          // МАС адреса точек
 
 static QueueHandle_t queue;

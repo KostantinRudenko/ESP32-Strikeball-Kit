@@ -788,6 +788,10 @@ void ParamsFromMemoToPlay(ListParameter* params) {
             s = params->getStringParameter("BLUE team MAC");
             MacStringToByteArray(s, G_aru8MACs[1]);
         }
+		else if (name_par == "LED strip MAC") {
+			s = params->getStringParameter("LED strip MAC");
+			MacStringToByteArray(s, G_aru8MACs[2]);
+		}
     }
 }
 
