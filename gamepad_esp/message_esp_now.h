@@ -103,8 +103,10 @@ const uint8_t LIGHT_STRIP     = 3;
 
 typedef struct {
     uint8_t cmd;            // команда
-    uint8_t data[2];        // data[0] - номер peer: (0=red; 1=blue; 255=broadcast)
+    uint8_t data[4];        // data[0] - номер peer: (0=red; 1=blue; 255=broadcast)
                             // data[1] - номер трека: (1-255)
+							// data[2] - номер команды (0=red; 1=blue)
+							// data[3] - прогресс захвата (1-100)
 } espnow_msg_t;
 
 
