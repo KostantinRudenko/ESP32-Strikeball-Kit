@@ -97,16 +97,17 @@ typedef enum {
     ESPNOW_RECV_CB,
 } espnow_event_id_t;
 
-const uint8_t PING          = 1;
-const uint8_t PLAY_TRACK    = 2;
-const uint8_t LIGHT_STRIP     = 3;
+const uint8_t PING                   = 1;
+const uint8_t PLAY_TRACK             = 2;
+const uint8_t FILL_STRIP             = 3;
+const uint8_t FILL_STRIP_BY_PROGRESS = 4;
+const uint8_t CLEAR_STRIP            = 5;
 
 typedef struct {
     uint8_t cmd;            // команда
-    uint8_t data[4];        // data[0] - номер peer: (0=red; 1=blue; 255=broadcast)
-                            // data[1] - номер трека: (1-255)
-							// data[2] - номер команды (0=red; 1=blue)
-							// data[3] - прогресс захвата (1-100)
+    uint8_t data[2];        // data[0] - номер peer: (0=red; 1=blue; 255=broadcast) / номер команды(0=red, 1=blue)
+                            // data[1] - номер трека: (1-255) / прогресс заполнения ленты
+// данные для колонок / светодиодной ленты сообтветственно
 } espnow_msg_t;
 
 
