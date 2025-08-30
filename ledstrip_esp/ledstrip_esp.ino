@@ -7,7 +7,6 @@
 #include "functions.h"
 
 #pragma endregion Includes
-
 #pragma region ______________________________ Variables
 
 String G_sThisDeviceMAC;
@@ -226,8 +225,8 @@ void setup() {
     G_sThisDeviceMAC = WiFi.macAddress();
 
     InitLedStrip();
-    //FastLED.addLeds<LED_TYPE, LEDSTRIP_PIN, COLOR_ORDER>(leds, LEDS_AMOUNT);
-    //ClearStrip();
+    FastLED.addLeds<LED_TYPE, LEDSTRIP_PIN, COLOR_ORDER>(leds, LEDS_AMOUNT);
+    Serial.println("v1");
 
     Serial.println("fastled initialized");
 
@@ -238,10 +237,7 @@ void setup() {
     assert(queue_in);
     if (queue_in != NULL) {
 
-        //StartStripAnimation();
-        fill_solid(leds, 5, WHITE_RGB);
-        FastLED.show();
-        delay(ONE_SECOND_DELAY);
+        StartStripAnimation();
         ClearStrip();
 
         xTaskCreatePinnedToCore(TaskMain, "TaskMain", 10000, NULL, 1, &hTaskMain, 1);
