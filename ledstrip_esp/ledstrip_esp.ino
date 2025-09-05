@@ -15,7 +15,6 @@ uint8_t G_aru8GamepadMAC[6];
 
 uint8_t G_u8MainState = ST_INIT;
 uint8_t G_u8WiFiState = ST_WIFI_INIT;
-// bool G_xDeviceConnected = false;
 
 static TaskHandle_t hTaskWiFi;
 static TaskHandle_t hTaskMain;
@@ -103,7 +102,6 @@ void TaskMain(void *pvParameters) {
                 rv = ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
                 if (rv) {
                     G_u8MainState++;
-                    Serial.println("main initialized");
                 }
                 break;
 
@@ -115,7 +113,7 @@ void TaskMain(void *pvParameters) {
                 if (s == pdPASS) {
                     // выполнение команды, подготовка ответного сообщения
                     if (parseMessage(&qitem, &outMsg))
-                        //G_u8MainState++;
+                        G_u8MainState++;
                         G_u8MainState = ST_WAIT_CMD;
                 }
                 break;
@@ -190,11 +188,6 @@ void TaskWiFi(void* pvParameters) {
                     xTaskNotifyGive(hTaskMain);
                     G_u8WiFiState = ST_WIFI_RUN;
 
-                    Serial.println("wifi initialized");
-
-                    //LightLedsFromStart(1, GREEN_RGB);
-                    //vTaskDelay(ONE_SECOND_DELAY);
-                    //ClearStrip();
                 }
                 else {
 
@@ -217,18 +210,12 @@ void TaskWiFi(void* pvParameters) {
 #pragma endregion WiFi
 
 void setup() {
-    Serial.begin(9600);
-    Serial.println("\nserial initialized");
-
     pinMode(LEDSTRIP_PIN, OUTPUT);
 
     G_sThisDeviceMAC = WiFi.macAddress();
 
     InitLedStrip();
     FastLED.addLeds<LED_TYPE, LEDSTRIP_PIN, COLOR_ORDER>(leds, LEDS_AMOUNT);
-    Serial.println("v1");
-
-    Serial.println("fastled initialized");
 
     MacStringToByteArray(G_sThisDeviceMAC, G_aru8ThisDeviceMAC);
     MacStringToByteArray(Gc_sGamepadMAC, G_aru8GamepadMAC);
@@ -242,7 +229,6 @@ void setup() {
 
         xTaskCreatePinnedToCore(TaskMain, "TaskMain", 10000, NULL, 1, &hTaskMain, 1);
         xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
-        Serial.println("tasks created");
     }
 }
 
