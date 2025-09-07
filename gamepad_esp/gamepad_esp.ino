@@ -234,8 +234,8 @@ void TaskWiFi(void *pvParameters) {
     BaseType_t rc;
 
     espnow_event_t evt;
-    bool xLink = LED_OFF;                 // состояние светодиода LINK
-    uint32_t u32LinkLEDTime;
+    //bool xLink = LED_OFF;                 // состояние светодиода LINK
+    //uint32_t u32LinkLEDTime;
     uint32_t u32AckWaitTimer;               // таймер ожидания ответного сообщения
 
     // EventBits_t uxBits;
@@ -482,8 +482,10 @@ preferences.begin("my-app", true);
     pinMode(BLUE_LED_PIN, OUTPUT);
     digitalWrite(BLUE_LED_PIN, LED_OFF);
 
-    lcd.init();
-    lcd.backlight();
+    //lcd.init();
+    //lcd.backlight();
+
+    tft.init();
 
     delay(100);
 
@@ -512,6 +514,7 @@ preferences.begin("my-app", true);
     blueButton.read();
     redButton.read();
 
+    /*
     byte bar1[8] = {
         B10000,
         B10000,
@@ -568,6 +571,7 @@ preferences.begin("my-app", true);
     lcd.createChar(2, bar3);
     lcd.createChar(3, bar4);
     lcd.createChar(4, bar5);
+    */
 
 
 /*

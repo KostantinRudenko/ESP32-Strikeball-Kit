@@ -10,6 +10,7 @@
 #include <Keypad.h>
 #include <Preferences.h>
 #include <ESP32Servo.h>           // для работы beeper
+#include <TFT_eSPI.h>
 #include "TimerExt.h"
 #include "message_esp_now.h"
 
@@ -22,15 +23,25 @@
 #define LED_ON  HIGH      // LOW
 #define LED_OFF LOW       // HIGH
 
-//Pins
-const uint8_t LINK_LED_PIN    = 4;                                // светодиод LINK
-const uint8_t BUZZER_PIN      = 13;                               // пищалка
-const uint8_t BUTTON_RED_PIN  = 23;                               // кнопка красной команды
-const uint8_t BUTTON_BLUE_PIN = 19;                               // кнопка синей команды
-const uint8_t RED_LED_PIN     = 16;                               // подсветка кнопки красной команды
-const uint8_t BLUE_LED_PIN    = 17;                               // подсветка синей красной команды
+/* НАСТРОЙКА TFT SPI
+ * Для настройки нужно найти место где находиться библиотека и редактировать User_Setup.h.
+ * Нужно настроить подксветку, инверсию, драйвер(!), пины(!), частоту(!)
+ * ! - обязательно
+ *
+ * (это поверхностно, для деталей надо смотреть сам файл, там есть инструкции)
+ *
+ * При странно поведении дисплэя, проверить напряжение: должно быть 3.3В
+ */
 
-const int8_t LCD_ROWS = 4;                                        // число строк дисплея
+//Pins
+//const uint8_t LINK_LED_PIN    = 4;                                // светодиод LINK
+const uint8_t BUZZER_PIN      = 13;                               // пищалка
+const uint8_t BUTTON_RED_PIN  = 22;                               // кнопка красной команды
+const uint8_t BUTTON_BLUE_PIN = 21;                               // кнопка синей команды
+//const uint8_t RED_LED_PIN     = 16;                               // подсветка кнопки красной команды
+//const uint8_t BLUE_LED_PIN    = 17;                               // подсветка синей красной команды
+
+//const int8_t LCD_ROWS = 4;                                        // число строк дисплея
 
 // const uint8_t MAX_POINTS = 2;                                     // Мах количество точек
 
@@ -105,10 +116,11 @@ const char *sPointNameStates[5]  = {
 };
 
 
-LiquidCrystal_I2C lcd(I2C_Addr_LCD, 20, LCD_ROWS);
+TFT_eSPI tft = TFT_eSPI();
+//LiquidCrystal_I2C lcd(I2C_Addr_LCD, 20, LCD_ROWS);
 
 uint8_t pin_rows[ROW_NUM] = {14, 27, 26, 25};
-uint8_t pin_column[COLUMN_NUM] = {33, 32, 2, 15};
+uint8_t pin_column[COLUMN_NUM] = {33, 32, 16, 15};
 
 Keypad kpd = Keypad(makeKeymap(keys), pin_rows, pin_column, ROW_NUM, COLUMN_NUM);
 
