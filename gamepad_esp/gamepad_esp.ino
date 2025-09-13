@@ -21,6 +21,7 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 #include <JC_Button.h>
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
+#include <TFT_eSPI.h>
 
 #define	IMPLEMENTATION	FIFO
 
@@ -467,7 +468,11 @@ preferences.begin("my-app", true);
     //lcd.init();
     //lcd.backlight();
 
+    TFT_eSPI tft = TFT_eSPI();
+
     tft.init();
+    tft.setRotation(3);
+    tft.fillScreen(TFT_BLACK);
 
     delay(100);
 
@@ -486,8 +491,8 @@ preferences.begin("my-app", true);
     // индикация МАС адреса этого устройства
     if (kpd.getKey() != NO_KEY)
     {
-        lcd.setCursor(0,0);
-        lcd.print(WiFi.macAddress());
+        printTftText(WiFi.macAddress(), 0, 20, true, false, 0);
+        //lcd.print(WiFi.macAddress());
         delay(60000);
     }
 
@@ -586,14 +591,14 @@ preferences.begin("my-app", true);
     if (queue == NULL)
     {
         log_e("Create queue fail");
-        lcd.setCursor(0,0);
-        lcd.print(F("Create queue fail"));
+        printTftText("Create queue fail", 0, 20, true, false, 0);
+        //lcd.print(F("Create queue fail"));
         while (1) {;}
         // return ESP_FAIL;
     }
 
-    xTaskCreatePinnedToCore(TaskMain, "TaskMain", 20000, NULL, 1, &hTaskMain, 1);
-    xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
+    //xTaskCreatePinnedToCore(TaskMain, "TaskMain", 20000, NULL, 1, &hTaskMain, 1);
+    //xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
 }
 
 #pragma endregion Setup_function

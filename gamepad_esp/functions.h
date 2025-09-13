@@ -30,6 +30,21 @@ TimerExt timerBlue(true);                     // таймер прямого с�
 
 #pragma endregion Variables
 
+void printTftText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, uint8_t fontNumber){
+    tft.loadFont(Gs_arFonts[fontNumber]);
+
+    if (centerByX) {
+        x = (TFT_WIDTH - tft.textWidth(text)) / 2;
+    }
+    if (CenterByY) {
+        y = (TFT_HEIGHT - tft.fontHeight()) / 2;
+    }
+
+	tft.drawString(text, x, y);
+
+	tft.unloadFonts();
+}
+
 
 void display3DigitsInt(uint8_t col, uint8_t row, uint16_t var, char zero = ' ') {
     //----------------------------------------------------------------------------+

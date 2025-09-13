@@ -1,6 +1,8 @@
 #ifndef _GLOBAL_H_
 #define _GLOBAL_H_
 
+#pragma once
+
 #pragma region ________________________________ Includes
 
 #include <WiFi.h>
@@ -68,6 +70,9 @@ char keys[ROW_NUM][COLUMN_NUM] = {
   {'*','0','#','D'}
 };
 
+const uint16_t TFT_WIDTH = 480;
+const uint16_t TFT_HEIGHT = 320;
+
 #pragma endregion Constants
 
 
@@ -115,8 +120,12 @@ const char *sPointNameStates[5]  = {
          "Bad command   "
 };
 
+const String Gs_arFonts[] = {
+    "PlayerOneReady28"
+}
 
-TFT_eSPI tft = TFT_eSPI();
+
+extern TFT_eSPI tft;
 //LiquidCrystal_I2C lcd(I2C_Addr_LCD, 20, LCD_ROWS);
 
 uint8_t pin_rows[ROW_NUM] = {14, 27, 26, 25};
