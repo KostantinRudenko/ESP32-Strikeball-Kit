@@ -6,7 +6,7 @@
 #include <WiFi.h>
 #include <esp_now.h>
 //#include <esp_wifi.h>
-#include <LiquidCrystal_I2C.h>
+//#include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
 #include <Preferences.h>
 #include <ESP32Servo.h>           // для работы beeper
@@ -147,6 +147,9 @@ uint32_t G_u32BombTimeMS;                       // Время бомбы
 uint32_t G_u32RepeatTimeMS;                     // Время блокировки повторного нажатия кнпки в режиме "CONTROL POINT"
 String G_sPassword = "00000000";                // Пароль
 uint8_t G_arPeerStatus[MAX_POINTS];             // Состояния точек (true - точка найдена, иначе false)
+
+
+bool xLink;
 
 #pragma endregion Variables
 

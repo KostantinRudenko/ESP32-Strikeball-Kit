@@ -329,9 +329,6 @@ void TaskWiFi(void *pvParameters) {
                 break;
 
             case 3:
-                xLink = LED_ON;
-                digitalWrite(LINK_LED_PIN, xLink);
-                u32LinkLEDTime = xTaskGetTickCount();
                 xTaskNotify(hTaskMain, NTF_SEND_FINAL, eSetBits);
                 st = 1;
                 break;
@@ -347,13 +344,6 @@ void TaskWiFi(void *pvParameters) {
             case 5:  // Ошибка подключения WiFi
                 break;
     }
-
-    if (xTaskGetTickCount() - u32LinkLEDTime > 50 && xLink == LED_ON)
-    {
-        xLink = LED_OFF;
-        digitalWrite(LINK_LED_PIN, xLink);
-    }
-
   }
 }
 
@@ -473,14 +463,6 @@ preferences.begin("my-app", true);
 
 
 
-    pinMode(LINK_LED_PIN, OUTPUT);
-    digitalWrite(LINK_LED_PIN, LED_OFF);
-
-    pinMode(RED_LED_PIN, OUTPUT);
-    digitalWrite(RED_LED_PIN, LED_OFF);
-
-    pinMode(BLUE_LED_PIN, OUTPUT);
-    digitalWrite(BLUE_LED_PIN, LED_OFF);
 
     //lcd.init();
     //lcd.backlight();
