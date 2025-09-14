@@ -472,7 +472,7 @@ preferences.begin("my-app", true);
 
     tft.init();
     tft.setRotation(3);
-    tft.fillScreen(TFT_BLACK);
+    clearScreen();
 
     delay(100);
 
@@ -491,7 +491,7 @@ preferences.begin("my-app", true);
     // индикация МАС адреса этого устройства
     if (kpd.getKey() != NO_KEY)
     {
-        printTftText(WiFi.macAddress(), 0, 20, true, false, 0);
+        printTFTText(WiFi.macAddress(), 0, 20, true, false, 0);
         //lcd.print(WiFi.macAddress());
         delay(60000);
     }
@@ -591,7 +591,7 @@ preferences.begin("my-app", true);
     if (queue == NULL)
     {
         log_e("Create queue fail");
-        printTftText("Create queue fail", 0, 20, true, false, 0);
+        printTFTText("Create queue fail", 0, 20, true, false, 0);
         //lcd.print(F("Create queue fail"));
         while (1) {;}
         // return ESP_FAIL;
