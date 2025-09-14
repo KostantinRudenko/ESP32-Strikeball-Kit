@@ -753,7 +753,8 @@ void buildParameterList(modes mode, ListParameter* params) {
             break;
     }
     params->addStringParameter("RED team MAC", 'n', 17, "00:00:00:00:00:00");
-    params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");     params->addStringParameter("LED strip MAC", 'n', 17, "00:00:00:00:00:00")
+    params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");
+    params->addStringParameter("LED strip MAC", 'n', 17, "00:00:00:00:00:00");
 }
 
 
