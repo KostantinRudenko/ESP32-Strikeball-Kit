@@ -70,6 +70,9 @@ char keys[ROW_NUM][COLUMN_NUM] = {
   {'*','0','#','D'}
 };
 
+const String TEUTONNORMAL36 = "teutonnormal36";
+const String TEUTONNORMAL72 = "teutonnormal72";
+
 const uint16_t TFT_WIDTH = 480;
 const uint16_t TFT_HEIGHT = 320;
 
@@ -120,9 +123,6 @@ const char *sPointNameStates[5]  = {
          "Bad command   "
 };
 
-const String Gs_arFonts[] = {
-    "PlayerOneReady28"
-}
 
 
 extern TFT_eSPI tft;

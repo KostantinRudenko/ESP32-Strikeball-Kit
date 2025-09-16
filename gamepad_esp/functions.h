@@ -30,8 +30,8 @@ TimerExt timerBlue(true);                     // таймер прямого с�
 
 #pragma endregion Variables
 
-void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, uint8_t fontNumber){
-    tft.loadFont(Gs_arFonts[fontNumber]);
+void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, const String font){
+    tft.loadFont(font);
 
     if (centerByX) {
         x = (TFT_WIDTH - tft.textWidth(text)) / 2;

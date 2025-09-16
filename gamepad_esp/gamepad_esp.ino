@@ -22,6 +22,8 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #include <JC_Button.h>
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
 #include <TFT_eSPI.h>
+#include "FS.h"
+#include "SPIFFS.h"
 
 #define	IMPLEMENTATION	FIFO
 
@@ -468,6 +470,11 @@ preferences.begin("my-app", true);
     //lcd.init();
     //lcd.backlight();
 
+    if (!SPIFFS.begin(true)) {
+        log_e("SPIFFS mount failed");
+        printTFTText("SPIFFS mount failed", 0, 20, true, false, TEUTONNORMAL36);
+    }
+
     TFT_eSPI tft = TFT_eSPI();
 
     tft.init();
@@ -491,7 +498,7 @@ preferences.begin("my-app", true);
     // индикация МАС адреса этого устройства
     if (kpd.getKey() != NO_KEY)
     {
-        printTFTText(WiFi.macAddress(), 0, 20, true, false, 0);
+        printTFTText(WiFi.macAddress(), 0, 20, true, false, TEUTONNORMAL36);
         //lcd.print(WiFi.macAddress());
         delay(60000);
     }
@@ -591,7 +598,7 @@ preferences.begin("my-app", true);
     if (queue == NULL)
     {
         log_e("Create queue fail");
-        printTFTText("Create queue fail", 0, 20, true, false, 0);
+        printTFTText("Create queue fail", 0, 20, true, false, TEUTONNORMAL36);
         //lcd.print(F("Create queue fail"));
         while (1) {;}
         // return ESP_FAIL;
