@@ -42,7 +42,7 @@ void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool Cent
 
 	tft.drawString(text, x, y);
 
-	tft.unloadFonts();
+	tft.unloadFont();
 }
 
 void clearScreen() {
