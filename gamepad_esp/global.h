@@ -71,7 +71,7 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 };
 
 const String TEUTONNORMAL36 = "teutonnormal36";
-const String TEUTONNORMAL72 = "teutonnormal72";
+const String TEUTONNORMAL68 = "teutonnormal68";
 
 const uint16_t TFT_WIDTH = 480;
 const uint16_t TFT_HEIGHT = 320;

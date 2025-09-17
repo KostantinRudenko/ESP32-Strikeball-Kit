@@ -14,10 +14,10 @@ const char *mode_names[NUM_MODES]  = {
 const char *strGreeting[LCD_ROWS]  = {
     // экран приветствия
     //01234567890123456789
-    "   DOMINATION PRO ",
-    "    by Intelarms    ",
-    "   WIRELESS PROP    ",
-    "       2024         "
+    "DOMINATION PRO",
+    "by Intelarms",
+    "WIRELESS PROP",
+    "2024"
 };
 
 #pragma endregion Constants
@@ -28,11 +28,12 @@ void showGreeting(uint8_t view_sec = 3) {
   //                     Отрисовка экрана приветствия                           |
   //  [in] view_sec - время индикации экрана в с. По умолчанию 3 с.             |
   //----------------------------------------------------------------------------+
-  lcd.clear();
+  clearScreen();
   for (uint8_t r = 0; r < LCD_ROWS; r++)
   {
-    lcd.setCursor(0, r);
-    lcd.print(strGreeting[r]);
+	printTFTText(strGreeting[r], 0, r*50, true, false, TEUTONNORMAL68);
+    /*lcd.setCursor(0, r);
+    lcd.print(strGreeting[r]);*/
   }
   tone(BUZZER_PIN, 3000, 100);
   vTaskDelay(pdMS_TO_TICKS(150));
