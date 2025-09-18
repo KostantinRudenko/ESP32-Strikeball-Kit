@@ -72,9 +72,13 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 
 const String TEUTONNORMAL36 = "teutonnormal36";
 const String TEUTONNORMAL68 = "teutonnormal68";
+const uint8_t TEUTONNORMAL36_H = 34; // высота в пикселях
+const uint8_t TEUTONNORMAL68_H = 62;
 
-const uint16_t TFT_WIDTH = 480;
-const uint16_t TFT_HEIGHT = 320;
+const uint8_t SPACE_H = 12; // пиксели между строк
+
+const uint16_t DISPLAY_WIDTH = 480;
+const uint16_t DISPLAY_HEIGHT = 320;
 
 #pragma endregion Constants
 

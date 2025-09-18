@@ -10,8 +10,9 @@ const char *mode_names[NUM_MODES]  = {
    "Control Point"
 };
 
+const uint8_t greetingLength = 4;
 
-const char *strGreeting[LCD_ROWS]  = {
+const char *strGreeting[greetingLength]  = {
     // экран приветствия
     //01234567890123456789
     "DOMINATION PRO",
@@ -29,9 +30,9 @@ void showGreeting(uint8_t view_sec = 3) {
   //  [in] view_sec - время индикации экрана в с. По умолчанию 3 с.             |
   //----------------------------------------------------------------------------+
   clearScreen();
-  for (uint8_t r = 0; r < LCD_ROWS; r++)
+  for (uint8_t r = 0; r < greetingLength; r++)
   {
-	printTFTText(strGreeting[r], 0, r*50, true, false, TEUTONNORMAL68);
+	printTFTText(strGreeting[r], 0, r*(TEUTONNORMAL68_H+SPACE_H), true, false, TEUTONNORMAL68);
     /*lcd.setCursor(0, r);
     lcd.print(strGreeting[r]);*/
   }
