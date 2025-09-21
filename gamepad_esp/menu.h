@@ -35,7 +35,7 @@ void showGreeting(uint8_t view_sec = 3) {
   clearScreen();
   for (uint8_t r = 0; r < greetingLength; r++)
   {
-	printTFTText(strGreeting[r], 0, r*HEADER_SPACE_H, true, false, TEUTONNORMAL68);
+	printTFTText(strGreeting[r], 0, r*HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, TEUTONNORMAL68);
     /*lcd.setCursor(0, r);
     lcd.print(strGreeting[r]);*/
   }
@@ -85,7 +85,7 @@ int8_t setGameMode(int8_t mode) {
 
 					setTextColor(textColor);
 
-					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], 0, HEADER_SPACE_H+row*STRING_SPACE_H, true, false, TEUTONNORMAL36);
+					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], 0, HEADER_SPACE_H+row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, TEUTONNORMAL36);
                 }
             }
             // draw cursor in current position

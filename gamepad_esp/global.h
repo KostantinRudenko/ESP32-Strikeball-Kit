@@ -80,6 +80,12 @@ const uint8_t SPACE_H = 12; // пиксели между строк
 const uint8_t HEADER_SPACE_H = TEUTONNORMAL68_H + SPACE_H;
 const uint8_t STRING_SPACE_H = TEUTONNORMAL36_H + SPACE_H;
 
+#define CENTER_BY_X true
+#define CENTER_BY_Y true
+
+#define NOT_CENTER_BY_X false
+#define NOT_CENTER_BY_Y false
+
 const uint16_t DISPLAY_WIDTH = 480;
 const uint16_t DISPLAY_HEIGHT = 320;
 
