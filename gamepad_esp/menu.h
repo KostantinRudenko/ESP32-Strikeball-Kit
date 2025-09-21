@@ -1,6 +1,7 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
+#include "global.h"
 #pragma region ________________________________ Constants
 
 const char *mode_names[NUM_MODES]  = {
@@ -21,6 +22,8 @@ const char *strGreeting[greetingLength]  = {
     "2024"
 };
 
+const uint8_t gameModeChoosingPageSizeH = 5; // кол-во режимов, которые помещаються на одной странице
+
 #pragma endregion Constants
 
 
@@ -32,7 +35,7 @@ void showGreeting(uint8_t view_sec = 3) {
   clearScreen();
   for (uint8_t r = 0; r < greetingLength; r++)
   {
-	printTFTText(strGreeting[r], 0, r*(TEUTONNORMAL68_H+SPACE_H), true, false, TEUTONNORMAL68);
+	printTFTText(strGreeting[r], 0, r*HEADER_SPACE_H, true, false, TEUTONNORMAL68);
     /*lcd.setCursor(0, r);
     lcd.print(strGreeting[r]);*/
   }
@@ -59,6 +62,7 @@ int8_t setGameMode(int8_t mode) {
     static uint8_t st = 0;
     static uint8_t cur;
     static uint8_t page;
+	static uint16_t textColor;
 
     switch (st) {
         case 0:
@@ -67,18 +71,26 @@ int8_t setGameMode(int8_t mode) {
             break;
 
         case 1:            // отрисовка страницы режимов
-            lcd.clear();
-            page = cur / LCD_ROWS;
-            for (uint8_t row = 0; row < LCD_ROWS; row++) {
-                if ((page*LCD_ROWS + row) < NUM_MODES)
+			clearScreen();
+            page = cur / gameModeChoosingPageSizeH;
+            for (uint8_t row = 0; row < gameModeChoosingPageSizeH; row++) {
+                if ((page*gameModeChoosingPageSizeH + row) < NUM_MODES)
                 {
-                    lcd.setCursor(1, row);
-                    lcd.print(mode_names[page*LCD_ROWS + row]);
+                    //lcd.setCursor(1, row);
+                    //lcd.print(mode_names[page*LCD_ROWS + row]);
+					if (row == cur % gameModeChoosingPageSizeH)
+						textColor = TFT_SILVER;
+					else
+						textColor = TFT_WHITE;
+
+					setTextColor(textColor);
+
+					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], 0, HEADER_SPACE_H+row*STRING_SPACE_H, true, false, TEUTONNORMAL36);
                 }
             }
             // draw cursor in current position
-            lcd.setCursor(0, cur % LCD_ROWS);
-            lcd.write('>');
+            //lcd.setCursor(0, cur % LCD_ROWS);
+            //lcd.write('>');
             st++;
             break;
 
@@ -92,8 +104,8 @@ int8_t setGameMode(int8_t mode) {
                     return cur;
                 }
                 // clear cursor in current position
-                lcd.setCursor(0, cur % LCD_ROWS);
-                lcd.write(' ');
+                //lcd.setCursor(0, cur % LCD_ROWS);
+                //lcd.write(' ');
 
                 // change current position
                 if ('A' == key)                                 // A - up
@@ -101,13 +113,13 @@ int8_t setGameMode(int8_t mode) {
                 else                                            // B - dw
                     cur = cur < NUM_MODES - 1? cur + 1 : 0;
 
-                if (page == cur / LCD_ROWS)
+                /*if (page == cur / gameModeChoosingPageSizeH)
                 {
                     // page not change - draw cursor in new position on the
                     lcd.setCursor(0, cur % LCD_ROWS);
                     lcd.write('>');
                 }
-                else
+                else*/
                     st--;                                       // change page
             }
             break;

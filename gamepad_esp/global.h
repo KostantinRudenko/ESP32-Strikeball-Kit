@@ -77,6 +77,9 @@ const uint8_t TEUTONNORMAL68_H = 62;
 
 const uint8_t SPACE_H = 12; // пиксели между строк
 
+const uint8_t HEADER_SPACE_H = TEUTONNORMAL68_H + SPACE_H;
+const uint8_t STRING_SPACE_H = TEUTONNORMAL36_H + SPACE_H;
+
 const uint16_t DISPLAY_WIDTH = 480;
 const uint16_t DISPLAY_HEIGHT = 320;
 
