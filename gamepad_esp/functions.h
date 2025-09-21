@@ -1,7 +1,8 @@
 #ifndef _FUNCTIONS_H_
 #define _FUNCTIONS_H_
 
-#include "showTimeHMS.h"
+#include "global.h"
+#include "getTimeHMS.h"
 
 #pragma region ________________________________ Constants
 
@@ -188,6 +189,8 @@ void RenderStaticView() {
     lcd.setCursor(0, 0);
     switch (G_u8GameMode) {
         case DOMIN:
+			printTFTText("DOMINATION", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            /*
             lcd.print(F("     DOMINATION     "));
             lcd.setCursor(0, 1);
             lcd.print(F("                    "));
@@ -198,16 +201,18 @@ void RenderStaticView() {
             lcd.print(F("     "));
             lcd.setCursor(5, 3);
             lcd.print(F("     "));
+            */
 
             if (G_u8Team != NOONE)
             {
-                lcd.setCursor(5, 1 + G_u8Team);
-                lcd.print(F("====>"));
+                //lcd.setCursor(5, 1 + G_u8Team);
+                //lcd.print(F("====>"));
+                printTFTText("====>", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             }
             break;
 
         case DOMIN_PRO:
-            lcd.print(F("   DOMINATION PRO   "));
+			printTFTText("DOMINATION PRO", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             break;
 
         case BOMB:
@@ -233,18 +238,19 @@ void RenderStaticView() {
             "====================" - идет активация/дезактивация заряда (progress bar)
             */
             if (G_u8GameMode == BOMB)
-                lcd.print(F("      BOMB MODE     "));
+				printTFTText("BOMB MODE", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+                //lcd.print(F("      BOMB MODE     "));
             else
-                lcd.print(F("   CONTROL POINT    "));
-            lcd.setCursor(0, 1);
-            lcd.print(F("Game time:  "));
-            lcd.setCursor(12, 1);
-            showTimeHMS(lcd, game_timer.Secs());
+				printTFTText("CONTROL POINT", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+                //lcd.print(F("   CONTROL POINT    "));
+			printTFTText("Game time: ", 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            //lcd.setCursor(0, 1);
+            //lcd.print(F("Game time:  "));
+            //lcd.setCursor(12, 1);
+            //showTimeHMS(lcd, game_timer.Secs());
+            printTFTText(String(getTimeHMS(game_timer.Secs())), textWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             break;
     }
-
-    digitalWrite(RED_LED_PIN, G_u8Team == RED);
-    digitalWrite(BLUE_LED_PIN, G_u8Team == BLUE);
 }
 
 

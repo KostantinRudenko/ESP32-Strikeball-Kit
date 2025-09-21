@@ -71,7 +71,7 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 };
 
 const String TEUTONNORMAL36 = "teutonnormal36";
-const String TEUTONNORMAL68 = "teutonnormal68";
+const String TEUTONNORMAL68 = "teutonnormal68"; // тут шрифт с большой буквы
 const uint8_t TEUTONNORMAL36_H = 34; // высота в пикселях
 const uint8_t TEUTONNORMAL68_H = 62;
 
@@ -91,6 +91,9 @@ const uint8_t STRING_SPACE_H = TEUTONNORMAL36_H + SPACE_H;
 
 #define NOT_CENTER_BY_X false
 #define NOT_CENTER_BY_Y false
+
+#define NO_X 0
+#define NO_Y 0
 
 const uint16_t DISPLAY_WIDTH = 480;
 const uint16_t DISPLAY_HEIGHT = 320;

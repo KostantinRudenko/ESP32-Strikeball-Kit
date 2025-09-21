@@ -83,7 +83,7 @@ int8_t setGameMode(int8_t mode) {
 					else
 						textColor = TFT_WHITE;
 
-					setTextColor(textColor);
+					tft.setTextColor(textColor);
 
 					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], 0, HEADER_SPACE_H+row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
