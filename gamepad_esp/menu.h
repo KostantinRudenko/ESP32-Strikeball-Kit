@@ -1,6 +1,7 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
+#include "functions.h"
 #include "global.h"
 #pragma region ________________________________ Constants
 
@@ -127,14 +128,33 @@ int8_t setGameMode(int8_t mode) {
     return -1;
 }
 
-
+/*
 void redrawValueParameter(String s, uint8_t max_digits, uint8_t pos) {
     lcd.setCursor(0, 1);
     lcd.print(s);
     for (uint8_t i = s.length(); i < max_digits; i++)
         lcd.write(' ');
     lcd.setCursor(pos, 1);
+}*/
+
+void renderParameterView(Parameter *par, String value) {
+
+	static char type = par->getUnit();
+
+  clearScreen();
+	printTFTText(par->getName(), 0, 0, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+	if (type == 's') {
+		printTFTText("seconds", DISPLAY_WIDTH-getTextWidth("seconds", STRING_FONT), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	}
+	else if (type == 'm') {
+		printTFTText("minutes", DISPLAY_WIDTH-getTextWidth("minutes", STRING_FONT), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	}
+
+	printTFTText(value, 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 }
+
+// Надо сделать вместо функции сверху рендер изображения параметров
 
 
 bool editIntParameter(Parameter *par) {
@@ -154,36 +174,37 @@ bool editIntParameter(Parameter *par) {
     static uint8_t st = 0;
     static uint8_t max_chars;       // max число символов в значении параметра
     static char u;                  // единицы измерения параметра
-    static String inputString;
+    static String inputString = "";
     static uint8_t index;
     char key;
 
     switch (st) {
         case 0:
-            lcd.clear();
+            //lcd.clear();
             // имя параметра
-            lcd.print(par->getName());
+            //lcd.print(par->getName());
 
             // мах длина значения параметра
             max_chars = par->getMaxLengtn();
 
             // единицы измерения параметра
-            lcd.setCursor(max_chars + 1, 1);
-            u = par->getUnit();
-            if (u == 's')
-                lcd.print(F("seconds"));
-            else if (u == 'm')
-                lcd.print(F("minutes"));
+            //lcd.setCursor(max_chars + 1, 1);
+            //u = par->getUnit();
+            //if (u == 's')
+                //lcd.print(F("seconds"));
+            //else if (u == 'm')
+                //lcd.print(F("minutes"));
 
-            lcd.setCursor(5, 3);
-            lcd.print(F("[D] - exit"));
+            //lcd.setCursor(5, 3);
+            //lcd.print(F("[D] - exit"));
 
             // значение параметра
-            inputString = String(par->getIntValue());
+            //inputString = String(par->getIntValue());
             index = 0;
-            redrawValueParameter(inputString, max_chars, index);
+            //redrawValueParameter(inputString, max_chars, index);
+			renderParameterView(par, inputString);
 
-            lcd.blink();
+            //lcd.blink();
             st++;
             break;
 
@@ -201,7 +222,8 @@ bool editIntParameter(Parameter *par) {
                 if (++index >= max_chars)
                     index = 0;
 
-                redrawValueParameter(inputString, max_chars, index);
+                //redrawValueParameter(inputString, max_chars, index);
+				renderParameterView(par, inputString);
 
             }
             else if (key == 'D') {
@@ -211,7 +233,7 @@ bool editIntParameter(Parameter *par) {
                     par->setValue(inputString.toInt());
                     par->isValidRange();
                 }
-                lcd.noBlink();
+                //lcd.noBlink();
                 st = 0;
                 return true;
             }

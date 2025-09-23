@@ -3,6 +3,7 @@
 
 #include "global.h"
 #include "getTimeHMS.h"
+#include <csignal>
 
 #pragma region ________________________________ Constants
 
@@ -44,6 +45,13 @@ void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool Cent
 	tft.drawString(text, x, y);
 
 	tft.unloadFont();
+}
+
+uint16_t getTextWidth(String s, const String font) {
+	tft.loadFont(font);
+	uint16_t width = tft.textWidth(s);
+	tft.unloadFont(font);
+	return width;
 }
 
 void clearScreen() {
