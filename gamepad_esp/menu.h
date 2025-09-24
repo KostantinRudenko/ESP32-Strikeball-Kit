@@ -151,7 +151,9 @@ void renderParameterView(Parameter *par, String value) {
 	}
 
 	printTFTText(value, 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-	printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+
+	if (par->getType() != 'm')
+		printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 }
 
 // Надо сделать вместо функции сверху рендер изображения параметров
@@ -266,18 +268,19 @@ bool editStrParameter(Parameter *par) {
 
     switch (st) {
         case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            lcd.clear();
-            lcd.print(par->getName());
-            max_chars = par->getMaxLengtn();
-            inputString = par->getStringValue();
+            //lcd.clear();
+            //lcd.print(par->getName());
+            //max_chars = par->getMaxLengtn();
+            //inputString = par->getStringValue();
 
-            lcd.setCursor(0, 3);
-            lcd.print(F("      D -> exit     "));
+            //lcd.setCursor(0, 3);
+            //lcd.print(F("      D -> exit     "));
 
             // значение параметра
             index = 0;
-            redrawValueParameter(inputString, max_chars, index);
-            lcd.blink();
+            //redrawValueParameter(inputString, max_chars, index);
+            renderParameterView(par, inputString);
+            //lcd.blink();
             st++;
             break;
 
@@ -290,7 +293,7 @@ bool editStrParameter(Parameter *par) {
                     inputString.toCharArray(buf, max_chars+1);
                     par->setValue(buf);
                 }
-                lcd.noBlink();
+                //lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -299,11 +302,12 @@ bool editStrParameter(Parameter *par) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
                 par->changed = true;
                 inputString[index] = key;
-                lcd.write(inputString[index]);
+                //lcd.write(inputString[index]);
                 if (++index == max_chars)
                 {
                     index = 0;
-                    lcd.setCursor(index,1);
+					inputString = String(" ", max_chars);
+                    //lcd.setCursor(index,1);
                 }
             }
             break;
@@ -334,8 +338,8 @@ bool editMACParameter(Parameter *par) {
 
     switch (st) {
         case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            lcd.clear();
-            lcd.print(par->getName());
+            //lcd.clear();
+            //lcd.print(par->getName());
             max_chars = par->getMaxLengtn();
             inputString = par->getStringValue();
             st++;
@@ -343,10 +347,12 @@ bool editMACParameter(Parameter *par) {
 
         case 1:                 // отрисовка имени, значения параметра, строки подсказки
             // строка подсказки
-            lcd.setCursor(0, 3);
-            lcd.print(F("C -> edit  D -> exit"));
+            //lcd.setCursor(0, 3);
+            //lcd.print(F("C -> edit  D -> exit"));
+            printTFTText("C -> edit  D -> exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             index = 0;
-            redrawValueParameter(inputString, max_chars, index);
+            //redrawValueParameter(inputString, max_chars, index);
+			renderParameterView(par, inputString);
             st++;
             break;
 
@@ -354,10 +360,12 @@ bool editMACParameter(Parameter *par) {
             key = kpd.getKey();
             if (key == 'C') {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
-                lcd.setCursor(0, 3);
-                lcd.print(F("* -> E        # -> F"));
-                lcd.setCursor(index, 1);
-                lcd.blink();
+                //lcd.setCursor(0, 3);
+				renderParameterView(par, inputString);
+                //lcd.print(F("* -> E        # -> F"));
+				printTFTText("* -> E        # -> F", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+                //lcd.setCursor(index, 1);
+                //lcd.blink();
                 st++;
             }
             else if (key == 'D')  {
@@ -367,7 +375,7 @@ bool editMACParameter(Parameter *par) {
                     inputString.toCharArray(buf, max_chars+1);
                     par->setValue(buf);
                 }
-                lcd.noBlink();
+                //lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -384,17 +392,19 @@ bool editMACParameter(Parameter *par) {
                     inputString[index] = 'F';
                 else
                     inputString[index] = key;
-                lcd.write(inputString[index]);
+                //lcd.write(inputString[index]);
 
                 index++;
                 if (':' == inputString[index]) {
                     index++;
-                    lcd.setCursor(index, 1);
+                    //lcd.setCursor(index, 1);
                 }
+
+				renderParameterView(par, inputString);
 
                 if (index == max_chars)
                 {
-                    lcd.noBlink();
+                    //lcd.noBlink();
                     st = 1;
                 }
             }
