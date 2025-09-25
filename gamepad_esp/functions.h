@@ -32,7 +32,7 @@ TimerExt timerBlue(true);                     // таймер прямого с�
 
 #pragma endregion Variables
 
-void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, const String font){
+void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, const String font, const uint16_t color = TFT_WHITE){
     tft.loadFont(font);
 
     if (centerByX) {
@@ -256,7 +256,7 @@ void RenderStaticView() {
             //lcd.print(F("Game time:  "));
             //lcd.setCursor(12, 1);
             //showTimeHMS(lcd, game_timer.Secs());
-            printTFTText(String(getTimeHMS(game_timer.Secs())), textWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            printTFTText(String(getTimeHMS(game_timer.Secs())), getTextWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             break;
     }
 }
