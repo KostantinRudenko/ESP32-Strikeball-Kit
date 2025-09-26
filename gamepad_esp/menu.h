@@ -750,8 +750,10 @@ bool delayForStart() {
 
     switch (st) {
         case 0:                                         // чтобы не создавать новый, используем таймер игры для задержки автозапуска
-            lcd.clear();
-            lcd.print(F(" Left seconds to go"));
+            //lcd.clear();
+            clearScreen();
+            //lcd.print(F(" Left seconds to go"));
+            printTFTText(" Left seconds to go", NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             game_timer.SetTime(DELAY_START);
             game_timer.Start();
             st++;
@@ -761,16 +763,19 @@ bool delayForStart() {
             game_timer.Tick();
             if (!game_timer.GetTime()) {                // Если таймер отработал
                 game_timer.Stop();
-                lcd.setCursor(9, 1);
-                lcd.print("00");
+                //lcd.setCursor(9, 1);
+                //lcd.print("00");
+				printTFTText("00", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 st++;
             }
             else if (game_timer.Secs() != secs) {
-                lcd.setCursor(9, 1);
+                //lcd.setCursor(9, 1);
                 secs = game_timer.Secs();
-                if (secs < 10)
+                /*if (secs < 10)
                     lcd.write('0');
-                lcd.print(secs);
+                lcd.print(secs);*/
+            	printTFTText(" Left seconds to go", NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				printTFTText(secs, NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
             break;
