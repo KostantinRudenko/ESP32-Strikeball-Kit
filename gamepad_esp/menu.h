@@ -648,13 +648,17 @@ bool pressAnyKey() {
 
     switch (st) {
         case 0:
-            lcd.clear();
-            lcd.setCursor(2, 0);
-            lcd.print(F("Press # to start"));
-            lcd.setCursor(0, 2);
-            lcd.print(F(" RED:"));
-            lcd.setCursor(0, 3);
-            lcd.print(F("BLUE:"));
+            //lcd.clear();
+            clearScreen();
+            //lcd.setCursor(2, 0);
+            //lcd.print(F("Press # to start"));
+            printTFTText("Press # to start", NO_X, STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            //lcd.setCursor(0, 2);
+            //lcd.print(F(" RED:"));
+            printTFTText(" RED:", 0, HEADER_SPACE_H+STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            //lcd.setCursor(0, 3);
+            //lcd.print(F("BLUE:"));
+            printTFTText(" BLUE:", 0, HEADER_SPACE_H+STRING_SPACE_H+STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             start = false;
             st++;
@@ -662,10 +666,11 @@ bool pressAnyKey() {
 
         case 1:                                           // ждем сообщения WiFi подключена
             if (startWiFi()) {
-                lcd.setCursor(0, 1);
-                lcd.print("TX power: ");
+                //lcd.setCursor(0, 1);
+                //lcd.print("TX power: ");
                 int a = WiFi.getTxPower();
-                lcd.print(a);
+                //lcd.print(a);
+				printTFTText("TX power: "+(String)a, NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 point = MAX_POINTS;      // текущая точка для зондирования
                 st++;
             }
