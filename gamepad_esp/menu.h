@@ -470,6 +470,7 @@ int8_t EditParams(ListParameter* params) {
 
         case 1:                           // отрисовка страницы имен параметров
             //lcd.clear();
+            clearScreen();
             page = cur / LCD_ROWS;
             for (uint8_t row = 0; row < LCD_ROWS; row++) {
                 if ((page*LCD_ROWS + row) < NUMS) {
@@ -565,6 +566,7 @@ uint8_t dialogYesNo(String question) {
   static uint8_t st = 0;
   if (st == 0)
   {
+    clearScreen();
     //lcd.clear();
     //lcd.setCursor(0, 1);
  //         //"01234567890123456789"
@@ -591,10 +593,14 @@ uint8_t dialogYesNo(String question) {
 
 
 void showMsg(String line1, String line2, uint32_t tm = 2000) {
-  lcd.clear();
-  lcd.print(line1);
-  lcd.setCursor(0, 2);
-  lcd.print(line2);
+  //lcd.clear();
+  clearScreen();
+  //lcd.print(line1);
+  printTFTText("Message", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+  printTFTText(line1, NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+  //lcd.setCursor(0, 2);
+  //lcd.print(line2);
+  printTFTText(line2, NO_X, HEADER_SPACE_H+STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
   vTaskDelay(pdMS_TO_TICKS(tm));
 }
 
