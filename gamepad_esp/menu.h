@@ -469,18 +469,19 @@ int8_t EditParams(ListParameter* params) {
             break;
 
         case 1:                           // отрисовка страницы имен параметров
-            lcd.clear();
+            //lcd.clear();
             page = cur / LCD_ROWS;
             for (uint8_t row = 0; row < LCD_ROWS; row++) {
                 if ((page*LCD_ROWS + row) < NUMS) {
-                    lcd.setCursor(1, row);
-                    lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
+                    //lcd.setCursor(1, row);
+                    //lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
+                    printTFTText(params->parameters[page*LCD_ROWS + row]->getName(), NO_X, row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
             }
 
             // draw cursor in current position
-            lcd.setCursor(0, cur % LCD_ROWS);
-            lcd.write('>');
+            //lcd.setCursor(0, cur % LCD_ROWS);
+            //lcd.write('>');
             st++;
             break;
 
@@ -504,8 +505,8 @@ int8_t EditParams(ListParameter* params) {
                 }
 
                 // clear cursor in current position
-                lcd.setCursor(0, cur % LCD_ROWS);
-                lcd.write(' ');
+                //lcd.setCursor(0, cur % LCD_ROWS);
+                //lcd.write(' ');
 
                 // change current position
                 if ('A' == key)                                 // A - up
@@ -513,13 +514,14 @@ int8_t EditParams(ListParameter* params) {
                 else                                            // B - dw
                     cur = cur < NUMS - 1? cur + 1 : 0;
 
-                if (page == cur / LCD_ROWS) {
+                if (page != cur / LCD_ROWS) {
                     // page not change - draw cursor in new position on the
-                    lcd.setCursor(0, cur % LCD_ROWS);
-                    lcd.write('>');
-                }
-                else
+                    //lcd.setCursor(0, cur % LCD_ROWS);
+                    //lcd.write('>');
                     st--;                                       // change page
+                }
+                //else
+                    //st--;                                       // change page
             }
             break;
 
@@ -563,12 +565,15 @@ uint8_t dialogYesNo(String question) {
   static uint8_t st = 0;
   if (st == 0)
   {
-    lcd.clear();
-    lcd.setCursor(0, 1);
+    //lcd.clear();
+    //lcd.setCursor(0, 1);
  //         //"01234567890123456789"
-    lcd.print(question);
-    lcd.setCursor(0, 3);
-    lcd.print("[*] - NO   [#] - YES");
+    //lcd.print(question);
+    //lcd.setCursor(0, 3);
+    //lcd.print("[*] - NO   [#] - YES");
+	printTFTText(question, NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+	printTFTText("[*] - NO   [#] - YES", NO_X, DISPLAY_HEIGHT/2+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+
     st++;
   }
   else
