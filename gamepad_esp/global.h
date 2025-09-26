@@ -98,6 +98,9 @@ const uint8_t STRING_SPACE_H = TEUTONNORMAL36_H + SPACE_H;
 const uint16_t DISPLAY_WIDTH = 480;
 const uint16_t DISPLAY_HEIGHT = 320;
 
+#define DEFAULT_TEXT_COLOR TFT_WHITE
+#define CHOOSEN_TEXT_COLOR TFT_SILVER
+
 #pragma endregion Constants
 
 

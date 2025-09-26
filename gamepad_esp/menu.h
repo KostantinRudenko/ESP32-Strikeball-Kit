@@ -80,14 +80,17 @@ int8_t setGameMode(int8_t mode) {
                     //lcd.setCursor(1, row);
                     //lcd.print(mode_names[page*LCD_ROWS + row]);
 					if (row == cur % gameModeChoosingPageSizeH)
-						textColor = TFT_SILVER;
+						// выбраный режим
+						textColor = CHOOSEN_TEXT_COLOR;
 					else
-						textColor = TFT_WHITE;
+						// остальные режими
+						textColor = DEFAULT_TEXT_COLOR;
 
 					tft.setTextColor(textColor);
 
 					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], 0, HEADER_SPACE_H+row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
+				tft.setTextColor(DEFAULT_TEXT_COLOR);
             }
             // draw cursor in current position
             //lcd.setCursor(0, cur % LCD_ROWS);
