@@ -58,6 +58,10 @@ void clearScreen() {
 	tft.fillScreen(TFT_BLACK);
 }
 
+void clearSpace(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
+    tft.fillScreen(x, y, width, height, color);
+}
+
 
 void display3DigitsInt(uint8_t col, uint8_t row, uint16_t var, char zero = ' ') {
     //----------------------------------------------------------------------------+
