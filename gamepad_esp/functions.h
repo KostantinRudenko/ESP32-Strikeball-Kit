@@ -50,7 +50,7 @@ void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool Cent
 uint16_t getTextWidth(String s, const String font) {
 	tft.loadFont(font);
 	uint16_t width = tft.textWidth(s);
-	tft.unloadFont(font);
+	tft.unloadFont();
 	return width;
 }
 
