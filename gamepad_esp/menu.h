@@ -776,7 +776,7 @@ bool delayForStart() {
                     lcd.write('0');
                 lcd.print(secs);*/
             	printTFTText(" Left seconds to go", NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-				printTFTText(secs, NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				printTFTText((String)secs, NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
             break;
