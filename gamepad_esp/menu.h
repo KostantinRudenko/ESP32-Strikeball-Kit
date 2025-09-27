@@ -418,7 +418,7 @@ bool editMACParameter(Parameter *par) {
 }
 
 
-void drawIntValueParameter(uint32_t ival, uint8_t row) {
+/*void drawIntValueParameter(uint32_t ival, uint8_t row) {
     //----------------------------------------------------------------------------+
     //   Отрисовка значения параметра в заданной строке                           |
     //  ival - значение параметра                                                 |
@@ -437,7 +437,7 @@ void drawIntValueParameter(uint32_t ival, uint8_t row) {
     // }
     lcd.setCursor(0, row);
     lcd.print(ival);
-}
+}*/
 
 
 int8_t EditParams(ListParameter* params) {
