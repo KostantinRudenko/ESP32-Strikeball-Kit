@@ -473,7 +473,7 @@ int8_t EditParams(ListParameter* params) {
             //lcd.clear();
             clearScreen();
             page = cur / paramChoosingPageSize;
-            for (uint8_t row = 0; row < LCD_ROWS; row++) {
+            for (uint8_t row = 0; row < paramChoosingPageSize; row++) {
                 if ((page*paramChoosingPageSize + row) < NUMS) {
                     //lcd.setCursor(1, row);
                     //lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
