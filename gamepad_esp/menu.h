@@ -24,6 +24,7 @@ const char *strGreeting[greetingLength]  = {
 };
 
 const uint8_t gameModeChoosingPageSizeH = 5; // кол-во режимов, которые помещаються на одной странице
+const uint8_t paramChoosingPageSize = 5;
 
 #pragma endregion Constants
 
@@ -471,12 +472,12 @@ int8_t EditParams(ListParameter* params) {
         case 1:                           // отрисовка страницы имен параметров
             //lcd.clear();
             clearScreen();
-            page = cur / LCD_ROWS;
+            page = cur / paramChoosingPageSize;
             for (uint8_t row = 0; row < LCD_ROWS; row++) {
-                if ((page*LCD_ROWS + row) < NUMS) {
+                if ((page*paramChoosingPageSize + row) < NUMS) {
                     //lcd.setCursor(1, row);
                     //lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
-                    printTFTText(params->parameters[page*LCD_ROWS + row]->getName(), NO_X, row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+                    printTFTText(params->parameters[page*paramChoosingPageSize + row]->getName(), NO_X, row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
             }
 
@@ -515,7 +516,7 @@ int8_t EditParams(ListParameter* params) {
                 else                                            // B - dw
                     cur = cur < NUMS - 1? cur + 1 : 0;
 
-                if (page != cur / LCD_ROWS) {
+                if (page != cur / paramChoosingPageSize) {
                     // page not change - draw cursor in new position on the
                     //lcd.setCursor(0, cur % LCD_ROWS);
                     //lcd.write('>');
