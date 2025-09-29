@@ -59,7 +59,7 @@ void clearScreen() {
 }
 
 void clearSpace(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_t color) {
-    tft.fillScreen(x, y, width, height, color);
+    tft.fillRect(x, y, width, height, color);
 }
 
 
@@ -277,7 +277,9 @@ bool enterPassword(bool *fCursorChange) {
     const uint8_t max_chars = 8;
     const uint8_t start_pos = 20 - max_chars;
     static uint8_t st = 0;
-    static String inputString = "********";
+    static uint16_t phraseWidth = getTextWidth("Enter PASS> ", HEADER_FONT);
+	static uint16_t underscoreWidth = getTextWidth("_", HEADER_FONT);
+    static String inputString = "        ";
     static uint8_t index;
     static uint32_t tm;
     char key;
@@ -286,19 +288,24 @@ bool enterPassword(bool *fCursorChange) {
         case 0:                 // ожидание нажатия любой кнопки - отрисовка приглашения
             if (kpd.getKey() != NO_KEY) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
-                lcd.setCursor(0, 0);
-                lcd.print(F("Enter PASS> ********"));
-                inputString = "********";
+                //lcd.setCursor(0, 0);
+                //lcd.print(F("Enter PASS> ********"));
+				uint8_t labelStartPosition = (DISPLAY_WIDTH - phraseWidth - underscoreWidth*max_chars)/2;
+				printTFTText("Enter PASS> ", labelStartPosition, 0, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				for (uint8_t i = 0; i < max_chars; i++) {
+					printTFTText("_", phraseWidth+(underscoreWidth+12)*i, 0, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				}
+                inputString = "        ";
                 index = 0;
-                lcd.setCursor(start_pos + index, 0);
-                lcd.blink();
+                //lcd.setCursor(start_pos + index, 0);
+                //lcd.blink();
                 st++;
             }
             break;
 
         case 1:                     // редактирование
             if (*fCursorChange) {
-                lcd.setCursor(start_pos + index, 0);
+                //lcd.setCursor(start_pos + index, 0);
                 *fCursorChange = false;
             }
             key = kpd.getKey();
@@ -306,12 +313,15 @@ bool enterPassword(bool *fCursorChange) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
                 if (key == G_sPassword[index]) {
                     inputString[index] = key;
-                    lcd.write(inputString[index]);
+                    //lcd.write(inputString[index]);
+					printTFTText((String)key, phraseWidth+(underscoreWidth+12)*index, 0, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     if (++index == max_chars)
                     {
-                        lcd.noBlink();
-                        lcd.setCursor(0,0);
-                        lcd.print(F("    Password OK !   "));
+                        //lcd.noBlink();
+                        //lcd.setCursor(0,0);
+                        //lcd.print(F("    Password OK !   "));
+						clearSpace(0, 0, DISPLAY_WIDTH, HEADER_HEIGHT, TFT_BLACK);
+						printTFTText("Password OK !", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                         tm = xTaskGetTickCount();
                         st++;
                     }
