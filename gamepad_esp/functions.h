@@ -199,6 +199,7 @@ bool sendESP_NOW_ToMAC(const uint8_t *mac_addr, espnow_msg_t *msg) {
 
 void RenderStaticView() {
     lcd.setCursor(0, 0);
+	// убрать на clearSpace
     switch (G_u8GameMode) {
         case DOMIN:
 			printTFTText("DOMINATION", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
@@ -219,7 +220,7 @@ void RenderStaticView() {
             {
                 //lcd.setCursor(5, 1 + G_u8Team);
                 //lcd.print(F("====>"));
-                printTFTText("====>", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+                printTFTText("====>", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT); // сменить шрифт
             }
             break;
 
@@ -358,6 +359,9 @@ bool Domination(ListParameter* params, team_t* winner) {
     +--------------------+--------------------+*/
     static uint8_t st = 0;
     static uint32_t secs = game_timer.Secs();
+	static uint16_t teamTimerPositionX = DISPLAY_WIDTH-getTextWidth("00:00:00", HEADER_FONT);
+	static uint16_t redTimerPositionY = HEADER_SPACE_H+STRING_SPACE_H;
+	static uint16_t blueTimerPositionY = HEADER_SPACE_H+STRING_SPACE_H+HEADER_SPACE_H;
     static uint32_t time_press_red = xTaskGetTickCount();
     static uint32_t time_press_blue = xTaskGetTickCount();
     static uint8_t progressRed = 0;
@@ -378,30 +382,38 @@ bool Domination(ListParameter* params, team_t* winner) {
     switch (st)
     {
         case 0:
-            lcd.clear();
+            //lcd.clear();
+            clearScreen();
             // digitalWrite(RED_LED_PIN, LED_OFF);
             // digitalWrite(BLUE_LED_PIN, LED_OFF);
             G_u8Team = NOONE;
-            lcd.print(F("     DOMINATION"));
+            //lcd.print(F("     DOMINATION"));
+            printTFTText("DOMINATION", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             game_timer.SetTime(G_u32GameTimeMS);  // устанавливаем таймер игры
             secs = game_timer.Secs();
 
             i8CheckTimeCount = getTimeMarker(secs);
 
-            lcd.setCursor(6, 1);
-            showTimeHMS(lcd, secs);
+            //lcd.setCursor(6, 1);
+            //showTimeHMS(lcd, secs);
+			printTFTText(getTimeHMS(secs), NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             // названия команд
-            lcd.setCursor(0, 2);
-            lcd.print(team_names[RED]);
-            lcd.setCursor(0, 3);
-            lcd.print(team_names[BLUE]);
+            //lcd.setCursor(0, 2);
+            //lcd.print(team_names[RED]);
+				printTFTText(team_names[RED], 0, HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            //lcd.setCursor(0, 3);
+            //lcd.print(team_names[BLUE]);
+				printTFTText(team_names[BLUE], 0, HEADER_SPACE_H*2+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+
 
             // таймеры команд
-            lcd.setCursor(12, 2);
-            showTimeHMS(lcd, timerRed.Secs());
-            lcd.setCursor(12, 3);
-            showTimeHMS(lcd, timerBlue.Secs());
+            //lcd.setCursor(12, 2);
+            //showTimeHMS(lcd, timerRed.Secs());
+			printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            //lcd.setCursor(12, 3);
+            //showTimeHMS(lcd, timerBlue.Secs());
+			printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
             game_timer.Start();                   // запускаем таймер игры
             st++;
@@ -414,14 +426,17 @@ bool Domination(ListParameter* params, team_t* winner) {
 
         case 2:   // статика - отображаем время
             if (redValue || blueValue) {
-                lcd.setCursor(0, 0);
+                //lcd.setCursor(0, 0);
+				clearSpace(0, 0, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
                 if (G_u8Team == NOONE) {
-                    lcd.print(F("        ARMING      "));
+                    //lcd.print(F("        ARMING      "));
+					printTFTText("ARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     outMsg.data[0] = BROADCAST;
                     outMsg.data[1] = MP3_CAP_POINT;
                 }
                 else {
-                    lcd.print(F("      DISARMING     "));
+                    //lcd.print(F("      DISARMING     "));
+					printTFTText("DISARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     // Проигрываем на базе команды, которая не деактивирует точку
                     outMsg.data[0] = G_u8Team - 1;
                     outMsg.data[1] = MP3_CAP_OUR_POINT;
@@ -504,15 +519,18 @@ bool Domination(ListParameter* params, team_t* winner) {
             timerRed.Stop();
             timerBlue.Stop();
             game_timer.Stop();
-            lcd.setCursor(12, 2);
-            showTimeHMS(lcd, timerRed.Secs());
-            lcd.setCursor(12, 3);
-            showTimeHMS(lcd, timerBlue.Secs());
+            //lcd.setCursor(12, 2);
+            //showTimeHMS(lcd, timerRed.Secs());
+			printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            //lcd.setCursor(12, 3);
+            //showTimeHMS(lcd, timerBlue.Secs());
+			printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             st = 5;
         }
         else if (st != 3) {
             if (game_timer.Secs() != secs) {
-                lcd.setCursor(6, 1);
+                //lcd.setCursor(6, 1);
+				clearSpace(0, HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H, TFT_BLACK);
                 secs = game_timer.Secs();
                 showTimeHMS(lcd, secs);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
@@ -521,17 +539,22 @@ bool Domination(ListParameter* params, team_t* winner) {
             if (G_u8Team == RED) {
                 timerRed.Tick();
                 if (timerRed.Secs() != prev) {
-                    lcd.setCursor(12, 2);
+                    //lcd.setCursor(12, 2);
+					clearSpace(teamTimerPositionX, redTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
                     prev = timerRed.Secs();
-                    showTimeHMS(lcd, timerRed.Secs());
+                    //showTimeHMS(lcd, timerRed.Secs());
+					printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 }
             }
             else if (G_u8Team == BLUE) {
                 timerBlue.Tick();
                 if (timerBlue.Secs() != prev) {
                     prev = timerBlue.Secs();
-                    lcd.setCursor(12, 3);
-                    showTimeHMS(lcd, timerBlue.Secs());
+                    //lcd.setCursor(12, 3);
+					clearSpace(teamTimerPositionX, blueTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
+                    //showTimeHMS(lcd, timerBlue.Secs());
+					printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+
                 }
             }
 
