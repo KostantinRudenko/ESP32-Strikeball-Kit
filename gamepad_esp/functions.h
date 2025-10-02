@@ -198,7 +198,7 @@ bool sendESP_NOW_ToMAC(const uint8_t *mac_addr, espnow_msg_t *msg) {
 }
 
 void RenderStaticView() {
-    lcd.setCursor(0, 0);
+	clearSpace(0, 0, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
 	// убрать на clearSpace
     switch (G_u8GameMode) {
         case DOMIN:
@@ -220,7 +220,7 @@ void RenderStaticView() {
             {
                 //lcd.setCursor(5, 1 + G_u8Team);
                 //lcd.print(F("====>"));
-                printTFTText("====>", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT); // сменить шрифт
+                printTFTText("====>", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             }
             break;
 
