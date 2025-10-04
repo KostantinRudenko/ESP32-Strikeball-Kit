@@ -1083,7 +1083,7 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
     const uint32_t LO_REPEAT_TIME_MS = 5000;
     const uint32_t HI_REPEAT_TIME_MS = 30000;
     const uint32_t LONG_PRESS_MS = 100;
-    const uint8_t led_pins[2] = {RED_LED_PIN, BLUE_LED_PIN};
+    //const uint8_t led_pins[2] = {RED_LED_PIN, BLUE_LED_PIN};
 
     static uint8_t st = 0;
     static uint32_t secs = 0;
