@@ -63,7 +63,7 @@ void clearSpace(uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint32_
 }
 
 
-void display3DigitsInt(uint8_t col, uint8_t row, uint16_t var, char zero = ' ') {
+/*void display3DigitsInt(uint8_t col, uint8_t row, uint16_t var, char zero = ' ') {
     //----------------------------------------------------------------------------+
     //               Вывод двухзначного числа с лидирующим нулем                  |
     //  [in]  col  - колонка первого символа                                      |
@@ -77,6 +77,16 @@ void display3DigitsInt(uint8_t col, uint8_t row, uint16_t var, char zero = ' ') 
     else if (var < 10)
         lcd.write(zero);
     lcd.print(var);
+}*/
+
+String prapare3DigitsIntVar(uint16_t var) {
+	static String resultString;
+
+	if (var < 100) resultString = " ";
+	else if (var < 10) resultString = "  ";
+	resultString = resultString + (String)var;
+
+	return resultString;
 }
 
 uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
@@ -1085,25 +1095,36 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
     static uint16_t points[2];                          // количество нажатий кнопки
     static bool fRandomTime;                            // true - рандомное время блокировки повторного нажатия кнопки
 
+	static String pointsString;
+
+	static uint16_t pointsPositionX = DISPLAY_WIDTH-getTextWidth("000", HEADER_FONT);
+	static uint16_t timerPositionX = DISPLAY_WIDTH-getTextWidth("00:00:00", HEADER_FONT);
+
     switch (st) {
         case 0:                                         // инициализация переменных, отрисовка статической информации на дисплее
-            lcd.clear();
-            lcd.setCursor(4, 0);
-            lcd.print(F("CONTROL POINT"));
+            //lcd.clear();
+            clearScreen();
+            //lcd.setCursor(4, 0);
+            //lcd.print(F("CONTROL POINT"));
+            printTFTText("CONTROL POINT", NO_X, 0, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
 
             game_timer.SetTime(G_u32GameTimeMS);  // устанавливаем таймер игры
             secs = game_timer.Secs();
             i8CheckTimeCount = getTimeMarker(secs);
 
-            lcd.setCursor(0, 1);
-            lcd.print(F("Game time:"));
-            lcd.setCursor(12, 1);
-            showTimeHMS(lcd, secs);
+            //lcd.setCursor(0, 1);
+            //lcd.print(F("Game time:"));
+			printTFTText("Game time:", 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            //lcd.setCursor(12, 1);
+            //showTimeHMS(lcd, secs);
+			printTFTText((String)secs, timerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
-            lcd.setCursor(0, 2);
-            lcd.print(F(" RED points:"));
-            lcd.setCursor(0, 3);
-            lcd.print(F("BLUE points:"));
+            //lcd.setCursor(0, 2);
+            //lcd.print(F(" RED points:"));
+			printTFTText("RED points:", 0, HEADER_SPACE_H*2, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            //lcd.setCursor(0, 3);
+            //lcd.print(F("BLUE points:"));
+			printTFTText("BLUE points:", 0, HEADER_SPACE_H*3, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
             fRandomTime = G_u32RepeatTimeMS == 0;
             for (i = 0; i < 2; i++) {
@@ -1114,8 +1135,10 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
                     lock_time[i] = random(LO_REPEAT_TIME_MS, HI_REPEAT_TIME_MS);
                 else
                     lock_time[i] = G_u32RepeatTimeMS;
-                display3DigitsInt(17, i + 2, points[i]);
-                digitalWrite(led_pins[i], pressed[i] ? LED_OFF : LED_ON);
+                //display3DigitsInt(17, i + 2, points[i]);
+				pointsString = prapare3DigitsIntVar(points[i]);
+				printTFTText(pointsString, pointsPositionX, HEADER_SPACE_H+HEADER_SPACE_H*i, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+                //digitalWrite(led_pins[i], pressed[i] ? LED_OFF : LED_ON);
             }
             st++;
             break;
@@ -1127,11 +1150,11 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
                     if (buttons[i].isPressed())
                     {
                         pressed[i] = true;
-                        digitalWrite(led_pins[i], LED_OFF);
+                        //digitalWrite(led_pins[i], LED_OFF);
                     }
 
                     if (!pressed[i] && !digitalRead(led_pins[i])) {
-                        digitalWrite(led_pins[i], LED_ON);
+                        //digitalWrite(led_pins[i], LED_ON);
                         outMsg.cmd = PLAY_TRACK;
                         outMsg.data[0] = i;
                         outMsg.data[1] = MP3_ENABLE_CTRLPOINT;
@@ -1144,14 +1167,17 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
                             game_timer.Start();
                         leaving_time[i] = xTaskGetTickCount();
                         points[i]++;
-                        display3DigitsInt(17, 2 + i, points[i]);
+						clearSpace(pointsPositionX, HEADER_SPACE_H+HEADER_SPACE_H*i, DISPLAY_WIDTH-pointsPositionX, HEADER_SPACE_H, TFT_BLACK);
+                        //display3DigitsInt(17, 2 + i, points[i]);
+						pointsString = prapare3DigitsIntVar(points[i]);
+						printTFTText(pointsString, pointsPositionX, HEADER_SPACE_H+HEADER_SPACE_H*i, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                         if (fRandomTime)
                             lock_time[i] = random(LO_REPEAT_TIME_MS, HI_REPEAT_TIME_MS);
                         pressed[i] = false;
                     }
                 }
                 else
-                    digitalWrite(led_pins[i], LED_OFF);
+                    //digitalWrite(led_pins[i], LED_OFF);
             }
             break;
 
@@ -1161,8 +1187,8 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
             else
                 *winner = points[RED - 1] > points[BLUE - 1] ? RED : BLUE;
 
-            digitalWrite(RED_LED_PIN, *winner == RED ? LED_ON : LED_OFF);
-            digitalWrite(BLUE_LED_PIN, *winner == BLUE ? LED_ON : LED_OFF);
+            //digitalWrite(RED_LED_PIN, *winner == RED ? LED_ON : LED_OFF);
+            //digitalWrite(BLUE_LED_PIN, *winner == BLUE ? LED_ON : LED_OFF);
             st++;
             break;
 
@@ -1182,14 +1208,18 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
         // Если время игры истекло
         if (!game_timer.GetTime()) {
             game_timer.Stop();
-            lcd.setCursor(12, 1);
-            showTimeHMS(lcd, 0);
+            //lcd.setCursor(12, 1);
+			clearSpace(timerPositionX, HEADER_SPACE_H, DISPLAY_WIDTH-timerPositionX, HEADER_SPACE_H, TFT_BLACK);
+            //showTimeHMS(lcd, 0);
+			printTFTText(getTimeHMS(0), timerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             st = 2;
         }
         else if (game_timer.Secs() != secs) {
-            lcd.setCursor(12, 1);
+            //lcd.setCursor(12, 1);
+			clearSpace(timerPositionX, HEADER_SPACE_H, DISPLAY_WIDTH-timerPositionX, HEADER_SPACE_H, TFT_BLACK);
             secs = game_timer.Secs();
-            showTimeHMS(lcd, secs);
+            //showTimeHMS(lcd, secs);
+			printTFTText(getTimeHMS(secs), timerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
 
             if (i8CheckTimeCount) {
