@@ -1181,7 +1181,7 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
                         pressed[i] = false;
                     }
                 }
-                else
+                //else
                     //digitalWrite(led_pins[i], LED_OFF);
             }
             break;
