@@ -1158,7 +1158,7 @@ bool ControlPoint(ListParameter* params, team_t* winner) {
                         //digitalWrite(led_pins[i], LED_OFF);
                     }
 
-                    if (!pressed[i] && !digitalRead(led_pins[i])) {
+                    if (!pressed[i] /*&& !digitalRead(led_pins[i])*/) {
                         //digitalWrite(led_pins[i], LED_ON);
                         outMsg.cmd = PLAY_TRACK;
                         outMsg.data[0] = i;
