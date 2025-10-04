@@ -144,8 +144,9 @@ void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
                 G_arPeerStatus[point] = recv_msg->data[1];      // если сообщение принято
         }
         // отрисовка состояния точки
-        lcd.setCursor(6, 2 + point);
-        lcd.print(sPointNameStates[G_arPeerStatus[point]]);
+        //lcd.setCursor(6, 2 + point);
+        //lcd.print(sPointNameStates[G_arPeerStatus[point]]);
+        printTFTText(sPointNameStates[G_arPeerStatus[point]], NO_X, HEADER_SPACE_H*point, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
     }
 }
 
