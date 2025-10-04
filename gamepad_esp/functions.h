@@ -7,7 +7,7 @@
 
 #pragma region ________________________________ Constants
 
-const int16_t LCD_H_DOTS = 100;                // число точек LCD по горизонтали  = число точек на символ * число символов (5*20=100)
+//const int16_t LCD_H_DOTS = 100;                // число точек LCD по горизонтали  = число точек на символ * число символов (5*20=100)
 const char *team_names[3] = {
     "    ",
     " RED",
@@ -89,21 +89,22 @@ String prapare3DigitsIntVar(uint16_t var) {
 	return resultString;
 }
 
-uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
+uint32_t ProcessButton(const Button button, uint32_t *progress, uint32_t *time) {
     if (button.isReleased()) {
         *progress = 0;
         *time = xTaskGetTickCount();
         return 0;
     }
 
-    if (*progress >= LCD_H_DOTS) return 100;
+    if (*progress >= PROGRESS_BAR_WIDTH) return PROGRESS_BAR_WIDTH;
     if (*progress == 0) {
-        lcd.setCursor(0, 1);
-        lcd.print(F("                    "));
+        //lcd.setCursor(0, 1);
+        //lcd.print(F("                    "));
+        clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE_H, TFT_BLACK);
     }
 
     uint32_t var = (xTaskGetTickCount() - *time);
-    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, LCD_H_DOTS);
+    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, DISPLAY_WIDTH);
 
     while (*progress < new_progress) {
 
@@ -115,19 +116,21 @@ uint8_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 			sendESP_NOW_ToMAC(G_aru8MACs[2], &msg);
 		}
 
-        lcd.setCursor(*progress / 5, 1);
-        lcd.print((char)(*progress % 5));
+        //lcd.setCursor(*progress / 5, 1);
+        //lcd.print((char)(*progress % 5));
+		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, *progress, PROGRESS_BAR_HEIGHT, TFT_WHITE);
         tone(BUZZER_PIN, *progress * 25);
         *progress += 1;
     }
 
-    if (*progress >= LCD_H_DOTS) {
+    if (*progress >= PROGRESS_BAR_WIDTH) {
         // *progress = LCD_H_DOTS;
-        lcd.setCursor(0, 1);
-        lcd.print(F("                   "));
-        return 100;
+        //lcd.setCursor(0, 1);
+        //lcd.print(F("                   "));
+		clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE_H, TFT_BLACK);
+        return PROGRESS_BAR_WIDTH;
     }
-    return *progress * 100UL / LCD_H_DOTS;
+    return *progress * 100UL / PROGRESS_BAR_WIDTH;
 }
 
 
@@ -374,8 +377,8 @@ bool Domination(ListParameter* params, team_t* winner) {
 	static uint16_t blueTimerPositionY = HEADER_SPACE_H+STRING_SPACE_H+HEADER_SPACE_H;
     static uint32_t time_press_red = xTaskGetTickCount();
     static uint32_t time_press_blue = xTaskGetTickCount();
-    static uint8_t progressRed = 0;
-    static uint8_t progressBlue = 0;
+    static uint32_t progressRed = 0;
+    static uint32_t progressBlue = 0;
     uint8_t redValue, blueValue;
     static uint32_t prev; // пред. значения таймера команды, владеющей точкой
     static uint8_t point; // 0,1
@@ -608,8 +611,8 @@ bool Bomb(ListParameter* params, team_t* winner) {
     static uint32_t time_press_red = xTaskGetTickCount();
     static uint32_t time_press_blue = xTaskGetTickCount();
     static uint32_t start_bomb_time;
-    static uint8_t progressRed = 0;
-    static uint8_t progressBlue = 0;
+    static uint32_t progressRed = 0;
+    static uint32_t progressBlue = 0;
     uint8_t redValue, blueValue;
 
     static bool fEmpty = true;
