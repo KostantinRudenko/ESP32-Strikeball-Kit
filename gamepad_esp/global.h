@@ -156,7 +156,7 @@ const char *sPointNameStates[5]  = {
 
 
 
-extern TFT_eSPI tft;
+TFT_eSPI tft = TFT_eSPI();
 //LiquidCrystal_I2C lcd(I2C_Addr_LCD, 20, LCD_ROWS);
 
 uint8_t pin_rows[ROW_NUM] = {14, 27, 26, 25};

@@ -112,8 +112,8 @@ uint32_t ProcessButton(const Button button, uint32_t *progress, uint32_t *time) 
 			espnow_msg_t msg;
 			msg.cmd = LIGHT_STRIP;
 			msg.data[0] = G_u8Team;
-			msg.data[1] = *process;
-			sendESP_NOW_ToMAC(G_aru8MACs[2], &msg);
+			msg.data[1] = *progress;
+      // тут надо зафигачить отправку сообщений на ленту
 		}
 
         //lcd.setCursor(*progress / 5, 1);
@@ -172,42 +172,6 @@ bool sendESP_NOW() {
         parseMessage(&send_evt, &recv_evt.msg);
         st = 0;
     }  // pdFALSE - если тайм-аут
-    return false;
-}
-
-bool sendESP_NOW_ToMAC(const uint8_t *mac_addr, espnow_msg_t *msg) {
-    //----------------------------------------------------------------------------+
-    //         Передать сообщение через ESP-NOW на указанный MAC-адрес            |
-    //  mac_addr - целевой MAC-адрес (6 байт)                                     |
-    //  msg - указатель на структуру сообщения espnow_msg_t                       |
-    //  return true, если передача завершена, иначе false                         |
-    //----------------------------------------------------------------------------+
-    static uint8_t st = 0;
-    uint32_t rv;
-
-    if (st == 0) {
-        if (msg == NULL || mac_addr == NULL) {
-            log_e("Invalid MAC address or message");
-            return false;
-        }
-
-        send_evt.msg = *msg; // Копируем сообщение
-        send_evt.status = MSG_RDY_TO_SEND;
-        if (esp_now_send(mac_addr, (uint8_t *) &send_evt.msg, sizeof(espnow_msg_t)) == ESP_OK) {
-            send_evt.status |= MSG_PUT_SEND_CB;
-            xTaskNotify(hTaskWiFi, NTF_SEND_WIFI, eSetBits);
-            st++;
-        } else {
-            log_e("Failed to send ESP-NOW message");
-            return false;
-        }
-    }
-    else if (xTaskNotifyWait(0, NTF_SEND_FINAL, &rv, 0) == pdTRUE) {
-        send_evt.status |= MSG_SEND_FINAL;
-        parseMessage(&send_evt, &recv_evt.msg);
-        st = 0;
-        return true;
-    }
     return false;
 }
 

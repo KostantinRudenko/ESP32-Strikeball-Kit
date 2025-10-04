@@ -475,7 +475,7 @@ preferences.begin("my-app", true);
         printTFTText("SPIFFS mount failed", 0, 20, true, false, TEUTONNORMAL36);
     }
 
-    TFT_eSPI tft = TFT_eSPI();
+    //TFT_eSPI tft = TFT_eSPI();
 
     tft.init();
     tft.setRotation(3);
