@@ -547,7 +547,7 @@ bool Domination(ListParameter* params, team_t* winner) {
 				clearSpace(0, HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H, TFT_BLACK);
                 secs = game_timer.Secs();
                 //showTimeHMS(lcd, secs);
-                printTFTText(getTimeHMS(secs), timerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, TFT_BLACK);
+                printTFTText(getTimeHMS(secs), DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, TFT_BLACK);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
 
