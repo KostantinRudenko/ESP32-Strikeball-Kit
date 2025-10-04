@@ -1213,32 +1213,42 @@ void showWinerTeam(team_t winner) {
     // индикация победителя
     switch (G_u8GameMode) {
         case DOMIN:
-            lcd.setCursor(6, 1);
+			clearScreen();
+            //lcd.setCursor(6, 1);
             if (winner == NOONE) {
-                lcd.print(F("  DRAW!     "));
+                //lcd.print(F("  DRAW!     "));
+				printTFTText("DRAW!", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             }
             else {
-                lcd.print(team_names[winner]);
-                lcd.print(F(" WIN!   "));
+                //lcd.print(team_names[winner]);
+                //lcd.print(F(" WIN!   "));
+				printTFTText((String)team_names[winner]+" WIN!", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             }
             // гасим возможную стрелочку
-            lcd.setCursor(5, 2);
-            lcd.print(F("     "));
-            lcd.setCursor(5, 3);
-            lcd.print(F("     "));
+			//
+			// я хз что за стрелка, но если она будет, то надо ее убарить с помощью clearSpace
+			//
+            //lcd.setCursor(5, 2);
+            //lcd.print(F("     "));
+            //lcd.setCursor(5, 3);
+            //lcd.print(F("     "));
             break;
         case DOMIN_PRO:
             break;
         case BOMB:
         case CTRL_POINT:
-            lcd.setCursor(0, 1);
+            //lcd.setCursor(0, 1);
+			clearSpace(0, HEADER_SPACE_H, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
             if (winner == NOONE)
                             //01234567890123456789
-                lcd.print(F("         DRAW !      "));
+                //lcd.print(F("         DRAW !      "));
+				printTFTText("DRAW !", NO_X, HEADER_SPACE_H, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
             else if (winner == RED)
-                lcd.print(F("       RED WIN!      "));
+                //lcd.print(F("       RED WIN!      "));
+				printTFTText("RED WIN!", NO_X, HEADER_SPACE_H, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
             else
-                lcd.print(F("       BLUE WIN!     "));
+                //lcd.print(F("       BLUE WIN!     "));
+				printTFTText("BLUE WIN!", NO_X, HEADER_SPACE_H, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
             break;
     }
 }
@@ -1297,11 +1307,14 @@ bool GameOver(team_t winner) {
                 return true;
             }
             if (xTaskGetTickCount() - tm > 1500) {
-                lcd.setCursor(0, 0);
+                //lcd.setCursor(0, 0);
+                clearSpace(0, 0, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
                 if (!xFlash)
-                    lcd.print(F("     GAME OVER !    "));
+                    //lcd.print(F("     GAME OVER !    "));
+					printTFTText("GAME OVER !", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 else
-                    lcd.print(F("Press # for new game"));
+                    //lcd.print(F("Press # for new game"));
+					printTFTText("Press # for new game", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 tm = xTaskGetTickCount();
                 xFlash = !xFlash;
             }
