@@ -610,6 +610,9 @@ bool Bomb(ListParameter* params, team_t* winner) {
     static bool activated = false;
     static bool pass_ok;                          // true-авторизация выполнена
 
+	static uint16_t bombTimePhraseLength = getTextWidth("Bomb time: ", HEADER_FONT);
+	static uint16_t timerPositionX = DISPLAY_WIDTH-getTextWidth("00:00:00", HEADER_FONT);
+
     redButton.read();
     blueButton.read();
 
@@ -628,11 +631,12 @@ bool Bomb(ListParameter* params, team_t* winner) {
 
     switch (st) {
         case 0:                                   // инициализация переменных, отрисовка статической информации на дисплее
+            clearScreen();
             G_u8Team = NOONE;
             pass_ok = false;
             *winner = NOONE;
             i8CheckTimeCount = getTimeMarker(secs);
-            lcd.clear();
+            //lcd.clear();
             game_timer.SetTime(G_u32GameTimeMS);  // устанавливаем таймер игры
             // secs = 0;
             secs = game_timer.Secs();
@@ -669,9 +673,10 @@ bool Bomb(ListParameter* params, team_t* winner) {
 
         case 3:    // ожидание старта активации/деактивации
             if (redValue || blueValue) {
-                lcd.setCursor(0, 0);
+                //lcd.setCursor(0, 0);
                 if (G_u8Team == NOONE) {
-                    lcd.print(F("        ARMING      "));
+                    //lcd.print(F("        ARMING      "));
+					printTFTText("ARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     // Проигрываем на базе команды, которая не захватывает точку
                     outMsg.data[0] = redValue ? BLUE - 1 : RED - 1;
                     outMsg.data[1] = MP3_THEY_ACTIVATE_BOMB;
@@ -680,7 +685,8 @@ bool Bomb(ListParameter* params, team_t* winner) {
                         log_e("Error: q_out_msg is full");
                     }
                 else {
-                    lcd.print(F("      DISARMING     "));
+                    //lcd.print(F("      DISARMING     "));
+					printTFTText("DISARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 }
                 st++;
             }
@@ -690,15 +696,17 @@ bool Bomb(ListParameter* params, team_t* winner) {
             if (redValue >= 100 || blueValue >= 100) {      // если активация/деактивация завершена
                 if (G_u8Team == NOONE) {                    // если активация завершена
                     G_u8Team = redValue >= 100 ? RED : BLUE;
-                    lcd.setCursor(3, 2);
-                    lcd.print(team_names[G_u8Team]);
-                    lcd.print(F(" activated"));
+                    //lcd.setCursor(3, 2);
+                    //lcd.print(team_names[G_u8Team]);
+                    //lcd.print(F(" activated"));
+					printTFTText((String)team_names[G_u8Team]+" activated", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     // Проигрываем на базе команды, которая не активировала бомву
                     outMsg.data[0] = G_u8Team == RED ? BLUE - 1 : RED - 1;
                     outMsg.data[1] = MP3_STOP_BOMB;
                     game_timer.Start();                 // запускаем таймер игры
-                    lcd.setCursor(0, 3);
-                    lcd.print(F("Bomb time:  "));
+                    //lcd.setCursor(0, 3);
+                    //lcd.print(F("Bomb time:  "));
+					printTFTText("Bomb time:  ", 0, HEADER_SPACE_H*3, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     bomb_timer.Start();
                     start_bomb_time = xTaskGetTickCount();
                     activated = true;
@@ -706,8 +714,9 @@ bool Bomb(ListParameter* params, team_t* winner) {
                 else {                                          // если деактивация завершена
                     bomb_timer.Stop();
                     activated = false;
-                    lcd.setCursor(0, 2);
-                    lcd.print("                    ");
+                    //lcd.setCursor(0, 2);
+                    //lcd.print("                    ");
+					clearSpace(0, HEADER_SPACE_H*2, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
                     outMsg.data[0] = BROADCAST;
                     outMsg.data[1] = MP3_DEACTIVATED_BOMB;
                     *winner = G_u8Team == RED ? BLUE : RED;  // запоминаем победителя
@@ -765,22 +774,30 @@ bool Bomb(ListParameter* params, team_t* winner) {
         if (!game_timer.GetTime() || !bomb_timer.GetTime()) {
             game_timer.Stop();
             bomb_timer.Stop();
-            lcd.setCursor(12, 1);
-            showTimeHMS(lcd, 0);
-            lcd.setCursor(12, 3);
-            showTimeHMS(lcd, bomb_timer.Secs());
+            //lcd.setCursor(12, 1);
+			clearSpace(timerPositionX, HEADER_SPACE_H, DISPLAY_WIDTH-timerPositionX, HEADER_SPACE_H, TFT_BLACK);
+            //showTimeHMS(lcd, 0);
+			printTFTText((String)getTimeHMS(0), timerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            //lcd.setCursor(12, 3);
+			clearSpace(timerPositionX, HEADER_SPACE_H*3, DISPLAY_WIDTH-timerPositionX, HEADER_SPACE_H, TFT_BLACK);
+            //showTimeHMS(lcd, bomb_timer.Secs());
+			printTFTText((String)getTimeHMS(bomb_timer.Secs()), timerPositionX, HEADER_SPACE_H*3, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             st = 6;
         }
         else if (st != 4) {
             if (game_timer.Secs() != secs) {
-                lcd.setCursor(12, 1);
+                //lcd.setCursor(12, 1);
+				clearSpace(timerPositionX, HEADER_SPACE_H, DISPLAY_WIDTH-timerPositionX, HEADER_SPACE_H, TFT_BLACK);
                 secs = game_timer.Secs();
-                showTimeHMS(lcd, secs);
+                //showTimeHMS(lcd, secs);
+				printTFTText((String)getTimeHMS(secs), timerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
                 // if (u8BombState == BS_RUN) {
                 if (activated) {
-                    lcd.setCursor(12, 3);
-                    showTimeHMS(lcd, bomb_timer.Secs());
+                    //lcd.setCursor(12, 3);
+					clearSpace(timerPositionX, HEADER_SPACE_H*3, DISPLAY_WIDTH-timerPositionX, HEADER_SPACE_H, TFT_BLACK);
+                    //showTimeHMS(lcd, bomb_timer.Secs());
+					printTFTText((String)getTimeHMS(bomb_timer.Secs()), timerPositionX, HEADER_SPACE_H*3, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 }
 
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
