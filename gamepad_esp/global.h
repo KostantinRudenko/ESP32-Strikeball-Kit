@@ -70,21 +70,18 @@ char keys[ROW_NUM][COLUMN_NUM] = {
   {'*','0','#','D'}
 };
 
-const String TEUTONNORMAL36 = "teutonnormal36";
-const String TEUTONNORMAL68 = "teutonnormal68"; // тут шрифт с большой буквы
-const uint8_t TEUTONNORMAL36_H = 34; // высота в пикселях
-const uint8_t TEUTONNORMAL68_H = 62;
+const String TEXT_FONT_FILE = "teutonnormal36";
+const String HEADER_FONT_FILE = "Teutonnormal68"; // тут шрифт с большой буквы
+uint16_t TEXT_HEIGHT;
+uint16_t HEADER_HEIGHT;
 
 const uint8_t SPACE_H = 12; // пиксели между строк
 
-#define HEADER_FONT TEUTONNORMAL68
-#define STRING_FONT TEUTONNORMAL36
+#define HEADER_FONT HEADER_FONT_FILE
+#define STRING_FONT TEXT_FONT_FILE
 
-#define HEADER_HEIGHT TEUTONNORMAL68_H
-#define STRING_HEIGHT TEUTONNORMAL36_H
-
-const uint8_t HEADER_SPACE_H = TEUTONNORMAL68_H + SPACE_H;
-const uint8_t STRING_SPACE_H = TEUTONNORMAL36_H + SPACE_H;
+const uint8_t HEADER_SPACE_H = HEADER_HEIGHT + SPACE_H;
+const uint8_t STRING_SPACE_H = TEXT_HEIGHT + SPACE_H;
 
 #define CENTER_BY_X true
 #define CENTER_BY_Y true

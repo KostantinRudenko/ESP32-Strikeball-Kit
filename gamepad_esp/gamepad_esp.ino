@@ -472,13 +472,27 @@ preferences.begin("my-app", true);
 
     if (!SPIFFS.begin(true)) {
         log_e("SPIFFS mount failed");
-        printTFTText("SPIFFS mount failed", 0, 20, true, false, TEUTONNORMAL36);
+        printTFTText("SPIFFS mount failed", 0, 20, true, false, HEADER_FONT);
     }
 
     //TFT_eSPI tft = TFT_eSPI();
 
     tft.init();
     tft.setRotation(3);
+
+    tft.loadFont(HEADER_FONT);
+    HEADER_HEIGHT = tft.fontHeight();
+    tft.loadFont(STRING_FONT);
+    TEXT_HEIGHT = tft.fontHeight();
+    tft.unloadFont();
+
+    clearScreen();
+    printTFTText("TEXT 000000", NO_X, NO_Y, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
+    delay(2000);
+    clearScreen();
+    printTFTText("TEXT 100000", NO_X, NO_Y, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
+    delay(2000);
+
     clearScreen();
 
     delay(100);
@@ -498,7 +512,7 @@ preferences.begin("my-app", true);
     // индикация МАС адреса этого устройства
     if (kpd.getKey() != NO_KEY)
     {
-        printTFTText(WiFi.macAddress(), 0, 20, true, false, TEUTONNORMAL36);
+        printTFTText(WiFi.macAddress(), 0, 20, true, false, HEADER_FONT);
         //lcd.print(WiFi.macAddress());
         delay(60000);
     }
@@ -598,14 +612,14 @@ preferences.begin("my-app", true);
     if (queue == NULL)
     {
         log_e("Create queue fail");
-        printTFTText("Create queue fail", 0, 20, true, false, TEUTONNORMAL36);
+        printTFTText("Create queue fail", 0, 20, true, false, STRING_FONT);
         //lcd.print(F("Create queue fail"));
         while (1) {;}
         // return ESP_FAIL;
     }
 
-    //xTaskCreatePinnedToCore(TaskMain, "TaskMain", 20000, NULL, 1, &hTaskMain, 1);
-    //xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
+    xTaskCreatePinnedToCore(TaskMain, "TaskMain", 20000, NULL, 1, &hTaskMain, 1);
+    xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
 }
 
 #pragma endregion Setup_function
