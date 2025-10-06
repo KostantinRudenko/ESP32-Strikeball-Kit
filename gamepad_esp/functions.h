@@ -36,10 +36,10 @@ void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool Cent
     tft.loadFont(font);
 
     if (centerByX) {
-        x = (TFT_WIDTH - tft.textWidth(text)) / 2;
+        x = (DISPLAY_WIDTH - tft.textWidth(text)) / 2;
     }
     if (CenterByY) {
-        y = (TFT_HEIGHT - tft.fontHeight()) / 2;
+        y = (DISPLAY_HEIGHT - tft.fontHeight()) / 2;
     }
 
 	tft.drawString(text, x, y);
