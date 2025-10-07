@@ -16,6 +16,9 @@
 #include "TimerExt.h"
 #include "message_esp_now.h"
 
+#include "fonts/teutonnormal36pt7b.h"
+#include "fonts/teutonnormal52pt7b.h"
+
 #pragma endregion Includes
 
 
@@ -70,15 +73,15 @@ char keys[ROW_NUM][COLUMN_NUM] = {
   {'*','0','#','D'}
 };
 
-const String TEXT_FONT_FILE = "teutonnormal36";
-const String HEADER_FONT_FILE = "Teutonnormal68"; // тут шрифт с большой буквы
-uint16_t TEXT_HEIGHT;
-uint16_t HEADER_HEIGHT;
+//const String TEXT_FONT_FILE = "teutonnormal36";
+//const String HEADER_FONT_FILE = "Teutonnormal68"; // тут шрифт с большой буквы
+uint8_t TEXT_HEIGHT = teutonnormal36pt7b.yAdvance;
+uint8_t HEADER_HEIGHT = teutonnormal52pt7b.yAdvance;
 
 const uint8_t SPACE_H = 12; // пиксели между строк
 
-#define HEADER_FONT HEADER_FONT_FILE
-#define STRING_FONT TEXT_FONT_FILE
+#define HEADER_FONT &teutonnormal36pt7b
+#define STRING_FONT &teutonnormal36pt7b
 
 const uint8_t HEADER_SPACE_H = HEADER_HEIGHT + SPACE_H;
 const uint8_t STRING_SPACE_H = TEXT_HEIGHT + SPACE_H;

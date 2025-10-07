@@ -478,13 +478,7 @@ preferences.begin("my-app", true);
     //TFT_eSPI tft = TFT_eSPI();
 
     tft.init();
-    tft.setRotation(3);
-
-    tft.loadFont(HEADER_FONT);
-    HEADER_HEIGHT = tft.fontHeight();
-    tft.loadFont(STRING_FONT);
-    TEXT_HEIGHT = tft.fontHeight();
-    tft.unloadFont();
+    tft.setRotation(1);
 
     clearScreen();
     printTFTText("TEXT 000000", NO_X, NO_Y, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);

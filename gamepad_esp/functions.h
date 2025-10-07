@@ -32,8 +32,8 @@ TimerExt timerBlue(true);                     // таймер прямого с�
 
 #pragma endregion Variables
 
-void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, const String font){
-    tft.loadFont(font);
+void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, const GFXfont *font){
+    tft.setFreeFont(font);
 
     if (centerByX) {
         x = (DISPLAY_WIDTH - tft.textWidth(text)) / 2;
@@ -44,13 +44,13 @@ void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool Cent
 
 	tft.drawString(text, x, y);
 
-	tft.unloadFont();
+	//tft.unloadFont();
 }
 
-uint16_t getTextWidth(String s, const String font) {
-	tft.loadFont(font);
+uint16_t getTextWidth(String s, const GFXfont *font) {
+	tft.setFreeFont(font);
 	uint16_t width = tft.textWidth(s);
-	tft.unloadFont();
+	//tft.unloadFont();
 	return width;
 }
 
