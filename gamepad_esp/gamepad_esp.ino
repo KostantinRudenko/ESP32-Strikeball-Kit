@@ -22,8 +22,6 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #include <JC_Button.h>
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
 #include <TFT_eSPI.h>
-#include "FS.h"
-#include "SPIFFS.h"
 
 #define	IMPLEMENTATION	FIFO
 
@@ -469,11 +467,6 @@ preferences.begin("my-app", true);
 
     //lcd.init();
     //lcd.backlight();
-
-    if (!SPIFFS.begin(true)) {
-        log_e("SPIFFS mount failed");
-        printTFTText("SPIFFS mount failed", 0, 20, true, false, HEADER_FONT);
-    }
 
     //TFT_eSPI tft = TFT_eSPI();
 
