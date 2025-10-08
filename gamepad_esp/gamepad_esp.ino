@@ -474,15 +474,6 @@ preferences.begin("my-app", true);
     tft.setRotation(1);
 
     clearScreen();
-    printTFTText("TEXT 000000", NO_X, NO_Y, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
-    delay(2000);
-    clearScreen();
-    printTFTText("TEXT 100000", NO_X, NO_Y, CENTER_BY_X, CENTER_BY_Y, HEADER_FONT);
-    delay(2000);
-
-    clearScreen();
-
-    delay(100);
 
     // Allow allocation of all timers
     ESP32PWM::allocateTimer(0);
