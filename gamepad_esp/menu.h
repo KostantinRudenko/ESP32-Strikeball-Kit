@@ -12,16 +12,7 @@ const char *mode_names[NUM_MODES]  = {
    "Control Point"
 };
 
-const uint8_t greetingLength = 4;
-
-const char *strGreeting[greetingLength]  = {
-    // экран приветствия
-    //01234567890123456789
-    "DOMINATION PRO",
-    "by Intelarms",
-    "WIRELESS PROP",
-    "2024"
-};
+const String GREETING_STRING = "INTELARMS";
 
 const uint8_t gameModeChoosingPageSizeH = 5; // кол-во режимов, которые помещаються на одной странице
 const uint8_t paramChoosingPageSize = 5;
@@ -35,12 +26,7 @@ void showGreeting(uint8_t view_sec = 3) {
   //  [in] view_sec - время индикации экрана в с. По умолчанию 3 с.             |
   //----------------------------------------------------------------------------+
   clearScreen();
-  for (uint8_t r = 0; r < greetingLength; r++)
-  {
-	printTFTText(strGreeting[r], 0, r*HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-    /*lcd.setCursor(0, r);
-    lcd.print(strGreeting[r]);*/
-  }
+  printTFTText(GREETING_STRING, NO_X, NO_Y, CENTER_BY_X, CENTER_BY_Y, STRING_FONT);
   tone(BUZZER_PIN, 3000, 100);
   vTaskDelay(pdMS_TO_TICKS(150));
   tone(BUZZER_PIN, 3000, 100);
