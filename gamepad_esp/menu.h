@@ -560,8 +560,8 @@ uint8_t dialogYesNo(String question) {
     //lcd.print(question);
     //lcd.setCursor(0, 3);
     //lcd.print("[*] - NO   [#] - YES");
-	printTFTText(question, NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-	printTFTText("[*] - NO   [#] - YES", NO_X, DISPLAY_HEIGHT/2+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+	printTFTText(question, NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	printTFTText("[*] - NO  [#] - YES", NO_X, DISPLAY_HEIGHT/2+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
     st++;
   }
