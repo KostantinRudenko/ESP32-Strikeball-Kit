@@ -60,36 +60,45 @@ void TaskMain(void *pvParameters) {
 
             case ST_GAMEMODE:                                           // выбор режима игры
                 tmp = setGameMode(G_u8GameMode);
-                if (tmp >= 0)
+                if (tmp != EDIT_PARAMS)
                 {
                     G_u8GameMode = (modes) tmp;
-                    G_u8DeviceState++;
+                    // формирование настроек для выбранного режима игры
+                    buildParameterList(G_u8GameMode, &param_list);
+                    log_i("buildParameterList OK !");
+                    if (!param_list.load()) {
+                        showMsg("Incorrect parameters", " Editing required");
+                        while (1);
+                    }
+                    G_u8DeviceState = ST_PRESSANYKEY;
                 }
-                break;
+                else {
+                    G_u8DeviceState = ST_OLDPARS;
+                }
+                //break;
 
-            case ST_CHECKPARS:                                          // контроль корректности настроек
-                // формирование настроек для выбранного режима игры
-                buildParameterList(G_u8GameMode, &param_list);
+                //case ST_CHECKPARS:                                          // контроль корректности настроек
 
-                log_i("buildParameterList OK !");
 
                 // загрузка настроек из Flash
-                if (param_list.load())
-                    G_u8DeviceState = ST_OLDPARS;                           // запрос на игру с параметрами предыдущего сеанса
-                else {
+                //if (param_list.load())
+                    //G_u8DeviceState = ST_OLDPARS;                           // запрос на игру с параметрами предыдущего сеанса
+                //else {
                     // Если не корректны - установка значений по умолчанию, вывод сообщения
                     // и переход на редактирование
-                    showMsg("Incorrect parameters", " Editing required");
-                    while (1);
-                }
+                    //showMsg("Incorrect parameters", " Editing required");
+                    //while (1);
+                //}
                 break;
 
             case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
                 tmp = dialogYesNo(" USED OLD SETTINGS? ");
-                if (DLG_NO == tmp)
+                if (DLG_NO == tmp) {
                     G_u8DeviceState = ST_EDIT_PARS;
-                else if (DLG_YES == tmp)
-                    G_u8DeviceState = ST_PARS2PLAY;
+                }
+                else if (DLG_YES == tmp) {
+                    G_u8DeviceState = ST_GAMEMODE;
+                }
                 break;
 
             case ST_EDIT_PARS:                                          // редактирование параметров
@@ -101,7 +110,9 @@ void TaskMain(void *pvParameters) {
                 if (DLG_NONE != tmp)
                 {
                     if (DLG_YES == tmp) param_list.store();
-                    G_u8DeviceState = ST_PARS2PLAY;
+                    /*if (G_u8GameMode == EDIT_PARAMS)*/
+                    G_u8DeviceState = ST_GAMEMODE;
+                    //else G_u8DeviceState = ST_PARS2PLAY;
                 }
                 break;
 

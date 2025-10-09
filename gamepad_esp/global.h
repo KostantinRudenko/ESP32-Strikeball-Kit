@@ -115,8 +115,8 @@ const uint16_t PROGRESS_BAR_Y_POSITION = HEADER_HEIGHT*2-PROGRESS_BAR_HEIGHT-SPA
 
 enum team_t {NOONE=0, RED, BLUE};
 
-enum modes {DOMIN, DOMIN_PRO, BOMB, CTRL_POINT};           // режимы
-const int8_t NUM_MODES = CTRL_POINT - DOMIN + 1;                  // число режимов
+enum modes {DOMIN, DOMIN_PRO, BOMB, CTRL_POINT, EDIT_PARAMS};           // режимы
+const int8_t NUM_MODES = EDIT_PARAMS - DOMIN + 1;                  // число режимов
 
 enum gstates_t {
     ST_GREET = 0,

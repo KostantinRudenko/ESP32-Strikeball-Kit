@@ -9,7 +9,8 @@ const char *mode_names[NUM_MODES]  = {
    "Domination",
    "Domination Pro",
    "Bomb mode",
-   "Control Point"
+   "Control Point",
+   "Edit Parameters"
 };
 
 const String GREETING_STRING = "INTELARMS";
@@ -48,10 +49,12 @@ int8_t setGameMode(int8_t mode) {
     +--------------------+
     */
     static uint8_t st = 0;
+	static bool isEnd = false;
     static uint8_t cur;
     static uint8_t page;
 	static uint16_t textColor;
 
+	for (;;) {
     switch (st) {
         case 0:
             cur = mode;
@@ -114,6 +117,8 @@ int8_t setGameMode(int8_t mode) {
                     st--;                                       // change page
             }
             break;
+		}
+		if (isEnd) break;
     }
     return -1;
 }
