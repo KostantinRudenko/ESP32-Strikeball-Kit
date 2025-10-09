@@ -144,6 +144,8 @@ void renderParameterView(Parameter *par, String value) {
 
 	if (par->getType() != 'm')
 		printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	else
+		printTFTText("[C] - edit [D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 }
 
 // Надо сделать вместо функции сверху рендер изображения параметров
@@ -353,7 +355,7 @@ bool editMACParameter(Parameter *par) {
                 //lcd.setCursor(0, 3);
 				renderParameterView(par, inputString);
                 //lcd.print(F("* -> E        # -> F"));
-				printTFTText("* -> E   # -> F", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+				printTFTText("* -> E   # -> F", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H*2, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 //lcd.setCursor(index, 1);
                 //lcd.blink();
                 st++;
@@ -391,6 +393,7 @@ bool editMACParameter(Parameter *par) {
                 }
 
 				renderParameterView(par, inputString);
+				printTFTText("* -> E   # -> F", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H*2, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
                 if (index == max_chars)
                 {
