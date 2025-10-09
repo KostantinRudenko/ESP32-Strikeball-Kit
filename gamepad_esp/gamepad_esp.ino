@@ -58,18 +58,20 @@ void TaskMain(void *pvParameters) {
                 G_u8DeviceState++;
                 break;
 
+            case ST_CHECKPARS:
+                // форматирование всех настроек
+                buildParameterList(&param_list);
+                log_i("buildParameterList OK !");
+                if (!param_list.load()) {
+                    showMsg("Incorrect parameters", " Editing required");
+                    while (1);
+                }
+
             case ST_GAMEMODE:                                           // выбор режима игры
                 tmp = setGameMode(G_u8GameMode);
                 if (tmp != EDIT_PARAMS)
                 {
                     G_u8GameMode = (modes) tmp;
-                    // формирование настроек для выбранного режима игры
-                    buildParameterList(G_u8GameMode, &param_list);
-                    log_i("buildParameterList OK !");
-                    if (!param_list.load()) {
-                        showMsg("Incorrect parameters", " Editing required");
-                        while (1);
-                    }
                     G_u8DeviceState = ST_PRESSANYKEY;
                 }
                 else {
@@ -481,6 +483,8 @@ preferences.begin("my-app", true);
 
     //TFT_eSPI tft = TFT_eSPI();
 
+    Serial.begin(9600);
+    Serial.println();
     tft.init();
     tft.setRotation(1);
 

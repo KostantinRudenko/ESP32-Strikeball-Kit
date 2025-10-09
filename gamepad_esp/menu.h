@@ -796,30 +796,19 @@ bool delayForStart() {
 }
 
 
-void buildParameterList(modes mode, ListParameter* params) {
+void buildParameterList(ListParameter* params) {
     // формирование настроек для выбранного режима игры
     // title, unit, max len, value, lo, hi)
-    params->addIntParameter("Game time", 'm', 3, 10, 1, 998);
-    switch (mode) {
-        case DOMIN:
-            params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
-            break;
-        case DOMIN_PRO:
-            params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
-            params->addStringParameter("Password", 'n', 8, "12345678");
-            break;
-        case BOMB:
-            params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
-            params->addIntParameter("Bomb time", 'm', 3, 5, 1, 997);
-            params->addStringParameter("Password", 'n', 8, "12345678");
-            break;
-        case CTRL_POINT:
-            params->addIntParameter("Repeat time", 's', 3, 5, 5, 999);
-            break;
-    }
+	params->addIntParameter("Game time", 'm', 3, 10, 1, 998);
+	params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
+	params->addStringParameter("Password", 'n', 8, "12345678");
+	params->addIntParameter("Bomb time", 'm', 3, 5, 1, 997);
+	params->addIntParameter("Repeat time", 's', 3, 5, 5, 999);
+
     params->addStringParameter("RED team MAC", 'n', 17, "00:00:00:00:00:00");
     params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");
     params->addStringParameter("LED strip MAC", 'n', 17, "00:00:00:00:00:00");
+	Serial.println("Built parameters");
 }
 
 

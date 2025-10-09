@@ -120,8 +120,8 @@ const int8_t NUM_MODES = EDIT_PARAMS - DOMIN + 1;                  // число
 
 enum gstates_t {
     ST_GREET = 0,
-    ST_GAMEMODE,
     ST_CHECKPARS,
+    ST_GAMEMODE,
     ST_OLDPARS,
     ST_EDIT_PARS,
     ST_SAVEPARS,
