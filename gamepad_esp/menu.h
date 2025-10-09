@@ -129,7 +129,7 @@ void redrawValueParameter(String s, uint8_t max_digits, uint8_t pos) {
 
 void renderParameterView(Parameter *par, String value) {
 
-	static char type = par->getUnit();
+	char type = par->getUnit();
 
   clearScreen();
 	printTFTText(par->getName(), 0, 0, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
