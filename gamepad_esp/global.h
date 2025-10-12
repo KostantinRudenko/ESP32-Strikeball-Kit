@@ -16,8 +16,8 @@
 #include "TimerExt.h"
 #include "message_esp_now.h"
 
-#include "fonts/teutonnormal36pt7b.h"
-#include "fonts/teutonnormal24pt7b.h"
+#include "fonts/teutonnormal20pt7b.h"
+#include "fonts/teutonnormal16pt7b.h"
 
 #pragma endregion Includes
 
@@ -78,8 +78,8 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 
 const uint8_t SPACE_H = 12; // пиксели между строк
 
-#define HEADER_FONT &teutonnormal36pt7b
-#define STRING_FONT &teutonnormal24pt7b
+#define HEADER_FONT &teutonnormal20pt7b
+#define STRING_FONT &teutonnormal16pt7b
 
 uint8_t TEXT_HEIGHT = *STRING_FONT.yAdvance;
 uint8_t HEADER_HEIGHT = *HEADER_FONT.yAdvance;
