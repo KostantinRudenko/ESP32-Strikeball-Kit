@@ -67,24 +67,13 @@ int8_t setGameMode(int8_t mode) {
             for (uint8_t row = 0; row < gameModeChoosingPageSizeH; row++) {
                 if ((page*gameModeChoosingPageSizeH + row) < NUM_MODES)
                 {
-                    //lcd.setCursor(1, row);
-                    //lcd.print(mode_names[page*LCD_ROWS + row]);
-					if (row == cur % gameModeChoosingPageSizeH)
+					//if (row == cur % gameModeChoosingPageSizeH)
 						// выбраный режим
-						textColor = CHOOSEN_TEXT_COLOR;
-					else
-						// остальные режими
-						textColor = DEFAULT_TEXT_COLOR;
+						//tft.fillCircle(RADIUS*2+SPACE, row*STRING_SPACE_H-RADIUS, RADIUS, CIRCLE_COLOR, BG_CIRCLE_COLOR);
 
-					tft.setTextColor(textColor);
-
-					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], 0, row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], RADIUS*2+SPACE, row*STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
-				tft.setTextColor(DEFAULT_TEXT_COLOR);
             }
-            // draw cursor in current position
-            //lcd.setCursor(0, cur % LCD_ROWS);
-            //lcd.write('>');
             st++;
             break;
 
@@ -97,9 +86,6 @@ int8_t setGameMode(int8_t mode) {
                     st = 0;
                     return cur;
                 }
-                // clear cursor in current position
-                //lcd.setCursor(0, cur % LCD_ROWS);
-                //lcd.write(' ');
 
                 // change current position
                 if ('A' == key)                                 // A - up
@@ -107,14 +93,13 @@ int8_t setGameMode(int8_t mode) {
                 else                                            // B - dw
                     cur = cur < NUM_MODES - 1? cur + 1 : 0;
 
-                /*if (page == cur / gameModeChoosingPageSizeH)
+                if (page != cur / gameModeChoosingPageSizeH)
                 {
-                    // page not change - draw cursor in new position on the
-                    lcd.setCursor(0, cur % LCD_ROWS);
-                    lcd.write('>');
-                }
-                else*/
                     st--;                                       // change page
+				}
+
+				clearSpace(0, 0, RADIUS*2+SPACE, DISPLAY_HEIGHT, TFT_BLACK);
+				tft.fillCircle(RADIUS+SPACE/2, (cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+RADIUS+SPACE/2, RADIUS, CIRCLE_COLOR);
             }
             break;
 		}

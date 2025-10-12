@@ -76,17 +76,18 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 //const String TEXT_FONT_FILE = "teutonnormal36";
 //const String HEADER_FONT_FILE = "Teutonnormal68"; // тут шрифт с большой буквы
 
-const uint8_t SPACE = 12; // пиксели между строк
-
 #define HEADER_FONT &teutonnormal20pt7b
 #define STRING_FONT &teutonnormal16pt7b
 
 uint8_t TEXT_HEIGHT = *STRING_FONT.yAdvance;
 uint8_t HEADER_HEIGHT = *HEADER_FONT.yAdvance;
 
+const uint8_t SPACE = 12; // пиксели между строк
+
 const uint8_t HEADER_SPACE_H = HEADER_HEIGHT + SPACE;
 const uint8_t STRING_SPACE_H = TEXT_HEIGHT + SPACE;
 
+const uint8_t RADIUS = TEXT_HEIGHT-SPACE*2; // радиус круга при выборе чего либо
 #define CENTER_BY_X true
 #define CENTER_BY_Y true
 
@@ -107,6 +108,9 @@ const uint16_t PROGRESS_BAR_Y_POSITION = HEADER_HEIGHT*2-PROGRESS_BAR_HEIGHT-SPA
 
 #define DEFAULT_TEXT_COLOR TFT_WHITE
 #define CHOOSEN_TEXT_COLOR TFT_SILVER
+
+#define CIRCLE_COLOR TFT_WHITE
+#define BG_CIRCLE_COLOR TFT_BLACK
 
 #pragma endregion Constants
 
