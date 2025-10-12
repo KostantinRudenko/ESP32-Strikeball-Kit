@@ -98,8 +98,8 @@ int8_t setGameMode(int8_t mode) {
                     st--;                                       // change page
 				}
 
-				clearSpace(0, 0, RADIUS*2+SPACE, DISPLAY_HEIGHT, TFT_BLACK);
-				tft.fillCircle(RADIUS+SPACE/2, (cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+RADIUS+SPACE/2, RADIUS, CIRCLE_COLOR);
+				clearSpace(PADDING, PADDING, RADIUS*2+SPACE, DISPLAY_HEIGHT, TFT_BLACK);
+				tft.fillCircle(PADDING+RADIUS+SPACE/2, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+RADIUS+SPACE/2, RADIUS, CIRCLE_COLOR);
             }
             break;
 		}

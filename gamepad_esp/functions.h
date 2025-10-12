@@ -38,9 +38,12 @@ void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool Cent
     if (centerByX) {
         x = (DISPLAY_WIDTH - tft.textWidth(text)) / 2;
     }
+	else { x = x + PADDING; }
+
     if (CenterByY) {
         y = (DISPLAY_HEIGHT - tft.fontHeight()) / 2;
     }
+	else { y = y + PADDING; }
 
 	tft.drawString(text, x, y);
 

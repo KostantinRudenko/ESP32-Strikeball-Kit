@@ -82,6 +82,7 @@ char keys[ROW_NUM][COLUMN_NUM] = {
 uint8_t TEXT_HEIGHT = *STRING_FONT.yAdvance;
 uint8_t HEADER_HEIGHT = *HEADER_FONT.yAdvance;
 
+const uint8_t PADDING = 20;
 const uint8_t SPACE = 12; // пиксели между строк
 
 const uint8_t HEADER_SPACE_H = HEADER_HEIGHT + SPACE;
