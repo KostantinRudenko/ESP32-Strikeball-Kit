@@ -100,7 +100,7 @@ uint32_t ProcessButton(const Button button, uint32_t *progress, uint32_t *time) 
     if (*progress == 0) {
         //lcd.setCursor(0, 1);
         //lcd.print(F("                    "));
-        clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE_H, TFT_BLACK);
+        clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE, TFT_BLACK);
     }
 
     uint32_t var = (xTaskGetTickCount() - *time);
@@ -127,7 +127,7 @@ uint32_t ProcessButton(const Button button, uint32_t *progress, uint32_t *time) 
         // *progress = LCD_H_DOTS;
         //lcd.setCursor(0, 1);
         //lcd.print(F("                   "));
-		clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE_H, TFT_BLACK);
+		clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE, TFT_BLACK);
         return PROGRESS_BAR_WIDTH;
     }
     return *progress * 100UL / PROGRESS_BAR_WIDTH;
@@ -180,7 +180,7 @@ void RenderStaticView() {
 	// убрать на clearSpace
     switch (G_u8GameMode) {
         case DOMIN:
-			printTFTText("DOMINATION", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText("DOMINATION", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             /*
             lcd.print(F("     DOMINATION     "));
             lcd.setCursor(0, 1);
@@ -203,7 +203,7 @@ void RenderStaticView() {
             break;
 
         case DOMIN_PRO:
-			printTFTText("DOMINATION PRO", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText("DOMINATION PRO", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             break;
 
         case BOMB:
@@ -229,10 +229,10 @@ void RenderStaticView() {
             "====================" - идет активация/дезактивация заряда (progress bar)
             */
             if (G_u8GameMode == BOMB)
-				printTFTText("BOMB MODE", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				printTFTText("BOMB MODE", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 //lcd.print(F("      BOMB MODE     "));
             else
-				printTFTText("CONTROL POINT", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				printTFTText("CONTROL POINT", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 //lcd.print(F("   CONTROL POINT    "));
 			printTFTText("Game time: ", 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             //lcd.setCursor(0, 1);
