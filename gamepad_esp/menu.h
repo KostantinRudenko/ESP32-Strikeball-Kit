@@ -51,6 +51,7 @@ int8_t setGameMode(int8_t mode) {
     static uint8_t st = 0;
 	static bool isEnd = false;
     static uint8_t cur;
+	static uint8_t prev_cur;
     static uint8_t page;
 	static uint16_t textColor;
 
@@ -88,18 +89,37 @@ int8_t setGameMode(int8_t mode) {
                 }
 
                 // change current position
-                if ('A' == key)                                 // A - up
+                if ('A' == key) {                               // A - up
                     cur = cur ? cur - 1 : NUM_MODES - 1;
-                else                                            // B - dw
+					prev_cur = (cur+1+NUM_MODES)%NUM_MODES;
+				}
+                else {                                          // B - dw
                     cur = cur < NUM_MODES - 1? cur + 1 : 0;
+					prev_cur = (cur-1+NUM_MODES)%NUM_MODES;
+				}
 
                 if (page != cur / gameModeChoosingPageSizeH)
                 {
                     st--;                                       // change page
 				}
 
+				Serial.println("cur: " + (String)cur + "       cur prev: " + (String)prev_cur);
+
+				// убираем линии вокруг предидущего режима
+				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+
+				// рисуем линию сверху от выбраного режима
+				clearSpace(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, TFT_WHITE);
+
+				// рисуем круг возле выбраного режима
 				clearSpace(PADDING, PADDING, RADIUS*2+SPACE, DISPLAY_HEIGHT, TFT_BLACK);
 				tft.fillCircle(PADDING+RADIUS+SPACE/2, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+RADIUS+SPACE/2, RADIUS, CIRCLE_COLOR);
+
+				// рисуем линию снизу от выбраного режима
+				clearSpace(PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, TFT_WHITE);
             }
             break;
 		}
