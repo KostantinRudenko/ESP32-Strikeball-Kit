@@ -20,6 +20,23 @@ const uint8_t paramChoosingPageSize = 5;
 
 #pragma endregion Constants
 
+void renderLines(uint8_t& cur, uint8_t& prev_cur) {
+				// убираем линии вокруг предидущего режима
+				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+
+				// рисуем линию сверху от выбраного режима
+				clearSpace(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, TFT_WHITE);
+
+				// рисуем круг возле выбраного режима
+				clearSpace(PADDING, PADDING, RADIUS*2+SPACE, DISPLAY_HEIGHT, TFT_BLACK);
+				tft.fillCircle(PADDING+RADIUS+SPACE/2, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+RADIUS+SPACE/2, RADIUS, CIRCLE_COLOR);
+
+				// рисуем линию снизу от выбраного режима
+				clearSpace(PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, TFT_WHITE);
+}
 
 void showGreeting(uint8_t view_sec = 3) {
   //----------------------------------------------------------------------------+
@@ -75,6 +92,7 @@ int8_t setGameMode(int8_t mode) {
 					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], RADIUS*2+SPACE, row*STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
             }
+			renderLines(cur, prev_cur);
             st++;
             break;
 
@@ -105,21 +123,7 @@ int8_t setGameMode(int8_t mode) {
 
 				Serial.println("cur: " + (String)cur + "       cur prev: " + (String)prev_cur);
 
-				// убираем линии вокруг предидущего режима
-				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
-				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
-
-				// рисуем линию сверху от выбраного режима
-				clearSpace(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
-				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, TFT_WHITE);
-
-				// рисуем круг возле выбраного режима
-				clearSpace(PADDING, PADDING, RADIUS*2+SPACE, DISPLAY_HEIGHT, TFT_BLACK);
-				tft.fillCircle(PADDING+RADIUS+SPACE/2, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+RADIUS+SPACE/2, RADIUS, CIRCLE_COLOR);
-
-				// рисуем линию снизу от выбраного режима
-				clearSpace(PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
-				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, TFT_WHITE);
+				renderLines(cur, prev_cur);
             }
             break;
 		}
@@ -455,6 +459,7 @@ int8_t EditParams(ListParameter* params) {
     static uint8_t st = 0;
     static uint8_t NUMS;                                    // число параметров в режиме
     static uint8_t cur;                                     // номер текущего параметра (0..NUMS-1)
+	static uint8_t prev_cur;
     static uint8_t page;                                    // номер страницы параметров (0..NUMS-1/4)
 
     char key;
@@ -476,13 +481,14 @@ int8_t EditParams(ListParameter* params) {
                 if ((page*paramChoosingPageSize + row) < NUMS) {
                     //lcd.setCursor(1, row);
                     //lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
-                    printTFTText(params->parameters[page*paramChoosingPageSize + row]->getName(), NO_X, row*STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+                    printTFTText(params->parameters[page*paramChoosingPageSize + row]->getName(), RADIUS*2+SPACE, row*STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
             }
 
             // draw cursor in current position
             //lcd.setCursor(0, cur % LCD_ROWS);
             //lcd.write('>');
+			renderLines(cur, prev_cur);
             st++;
             break;
 
@@ -510,10 +516,16 @@ int8_t EditParams(ListParameter* params) {
                 //lcd.write(' ');
 
                 // change current position
-                if ('A' == key)                                 // A - up
+                if ('A' == key) {                               // A - up
                     cur = cur ? cur - 1 : NUMS - 1;
-                else                                            // B - dw
+					prev_cur = (cur+1+NUM_MODES)%NUM_MODES;
+				}
+                else {                                          // B - dw
                     cur = cur < NUMS - 1? cur + 1 : 0;
+					prev_cur = (cur-1+NUM_MODES)%NUM_MODES;
+				}
+
+				renderLines(cur, prev_cur);
 
                 if (page != cur / paramChoosingPageSize) {
                     // page not change - draw cursor in new position on the
