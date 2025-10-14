@@ -148,18 +148,18 @@ void renderParameterView(Parameter *par, String value) {
   clearScreen();
 	printTFTText(par->getName(), 0, 0, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 	if (type == 's') {
-		printTFTText("seconds", DISPLAY_WIDTH-getTextWidth("seconds", STRING_FONT), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+		printTFTText("seconds", PADDING+ONE_DIGIT_WIDTH*par->getMaxLengtn(), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 	}
 	else if (type == 'm') {
-		printTFTText("minutes", DISPLAY_WIDTH-getTextWidth("minutes", STRING_FONT), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+		printTFTText("minutes", PADDING+ONE_DIGIT_WIDTH*par->getMaxLengtn(), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 	}
 
 	printTFTText(value, 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
 	if (par->getType() != 'm')
-		printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+		printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H-PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 	else
-		printTFTText("[C] - edit [D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+		printTFTText("[C] - edit [D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H-PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 }
 
 // Надо сделать вместо функции сверху рендер изображения параметров

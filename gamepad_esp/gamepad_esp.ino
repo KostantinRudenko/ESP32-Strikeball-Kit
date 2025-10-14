@@ -486,9 +486,11 @@ preferences.begin("my-app", true);
     Serial.begin(9600);
     Serial.println();
     tft.init();
-    tft.setRotation(1);
+    tft.setRotation(3);
 
     clearScreen();
+
+    ONE_DIGIT_WIDTH = getTextWidth("0", STRING_FONT);
 
     // Allow allocation of all timers
     ESP32PWM::allocateTimer(0);

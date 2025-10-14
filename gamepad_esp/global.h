@@ -84,6 +84,7 @@ uint8_t HEADER_HEIGHT = *HEADER_FONT.yAdvance;
 
 const uint8_t PADDING = 20;
 const uint8_t SPACE = 12; // пиксели между строк
+uint8_t ONE_DIGIT_WIDTH;
 
 const uint8_t HEADER_SPACE_H = HEADER_HEIGHT + SPACE;
 const uint8_t STRING_SPACE_H = TEXT_HEIGHT + SPACE;
