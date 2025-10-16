@@ -22,6 +22,7 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #include <JC_Button.h>
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
 #include <TFT_eSPI.h>
+#include "esp_log.h"
 
 #define	IMPLEMENTATION	FIFO
 
@@ -434,8 +435,6 @@ void TaskWiFi(void *pvParameters) {
 
 void setup(void) {
 
-    // Serial.begin(115200);
-
     log_i("Gamepad start.");
 
 // uint32_t sec;
@@ -483,8 +482,8 @@ preferences.begin("my-app", true);
 
     //TFT_eSPI tft = TFT_eSPI();
 
-    Serial.begin(9600);
-    Serial.println();
+    //Serial.begin(9600);
+    //Serial.println();
     tft.init();
     tft.setRotation(3);
 
