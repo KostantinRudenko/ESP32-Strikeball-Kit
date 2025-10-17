@@ -121,7 +121,6 @@ int8_t setGameMode(int8_t mode) {
                     st--;                                       // change page
 				}
 
-				Serial.println("cur: " + (String)cur + "       cur prev: " + (String)prev_cur);
 
 				renderLines(cur, prev_cur);
             }
@@ -145,16 +144,14 @@ void renderParameterView(Parameter *par, String value) {
 
 	char type = par->getUnit();
 
-  clearScreen();
-	printTFTText(par->getName(), 0, 0, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+  	//clearScreen();
+	printTFTText(par->getName(), PADDING, PADDING, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 	if (type == 's') {
-		printTFTText("seconds", PADDING+ONE_DIGIT_WIDTH*par->getMaxLengtn(), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+		printTFTText("seconds", PADDING+ONE_DIGIT_WIDTH*(par->getMaxLengtn()+1), PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 	}
 	else if (type == 'm') {
-		printTFTText("minutes", PADDING+ONE_DIGIT_WIDTH*par->getMaxLengtn(), HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+		printTFTText("minutes", PADDING+ONE_DIGIT_WIDTH*(par->getMaxLengtn()+1), PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 	}
-
-	printTFTText(value, 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
 	if (par->getType() != 'm')
 		printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H-PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
@@ -188,31 +185,23 @@ bool editIntParameter(Parameter *par) {
 
     switch (st) {
         case 0:
+			clearScreen();
             //lcd.clear();
             // имя параметра
             //lcd.print(par->getName());
 
             // мах длина значения параметра
             max_chars = par->getMaxLengtn();
-
-            // единицы измерения параметра
-            //lcd.setCursor(max_chars + 1, 1);
-            //u = par->getUnit();
-            //if (u == 's')
-                //lcd.print(F("seconds"));
-            //else if (u == 'm')
-                //lcd.print(F("minutes"));
-
-            //lcd.setCursor(5, 3);
-            //lcd.print(F("[D] - exit"));
+			log_d("Max chars: %d", max_chars);
 
             // значение параметра
-            //inputString = String(par->getIntValue());
+            inputString = String(par->getIntValue());
+			log_d("input string: %s", inputString);
             index = 0;
-            //redrawValueParameter(inputString, max_chars, index);
-			renderParameterView(par, inputString);
 
-            //lcd.blink();
+			renderParameterView(par, inputString);
+			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+
             st++;
             break;
 
@@ -227,11 +216,14 @@ bool editIntParameter(Parameter *par) {
                 else if (inputString.length() < max_chars)            // если не превысили допустимую длину параметра в символах
                     inputString += key;
 
-                if (++index >= max_chars)
-                    index = 0;
+                if (++index > max_chars) {
+                    index = 1;
+					inputString = String(key);
+				}
+				log_d("inputString: < %s > , index: < %d >", inputString, index);
 
-                //redrawValueParameter(inputString, max_chars, index);
-				renderParameterView(par, inputString);
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             }
             else if (key == 'D') {
@@ -825,7 +817,6 @@ void buildParameterList(ListParameter* params) {
     params->addStringParameter("RED team MAC", 'n', 17, "00:00:00:00:00:00");
     params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");
     params->addStringParameter("LED strip MAC", 'n', 17, "00:00:00:00:00:00");
-	Serial.println("Built parameters");
 }
 
 
