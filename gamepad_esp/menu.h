@@ -266,19 +266,18 @@ bool editStrParameter(Parameter *par) {
 
     switch (st) {
         case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            //lcd.clear();
-            //lcd.print(par->getName());
-            //max_chars = par->getMaxLengtn();
-            //inputString = par->getStringValue();
-
-            //lcd.setCursor(0, 3);
-            //lcd.print(F("      D -> exit     "));
+			clearScreen();
 
             // значение параметра
-            index = 0;
-            //redrawValueParameter(inputString, max_chars, index);
+			inputString = par->getStringValue();
+			max_chars = par->getMaxLengtn();
+
+			log_d("Input String: < %s > Max chars: < %d >", inputString, max_chars);
+
+            index = 9; // индекс больше максимального значения для того что б при начале редактирования строка очищалась и выводились клавиша+0000000
+
             renderParameterView(par, inputString);
-            //lcd.blink();
+			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             st++;
             break;
 
@@ -291,7 +290,6 @@ bool editStrParameter(Parameter *par) {
                     inputString.toCharArray(buf, max_chars+1);
                     par->setValue(buf);
                 }
-                //lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -300,13 +298,18 @@ bool editStrParameter(Parameter *par) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
                 par->changed = true;
                 inputString[index] = key;
-                //lcd.write(inputString[index]);
-                if (++index == max_chars)
+
+                if (++index > max_chars)
                 {
-                    index = 0;
-					inputString = String(" ", max_chars);
-                    //lcd.setCursor(index,1);
+                    index = 1;
+					inputString = String(key) + "0000000";
+											//   1234567
                 }
+
+				log_d("inputString: < %s > , index: < %d >", inputString, index);
+
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             }
             break;
     }
