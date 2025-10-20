@@ -338,22 +338,17 @@ bool editMACParameter(Parameter *par) {
     char key;
 
     switch (st) {
-        case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            //lcd.clear();
-            //lcd.print(par->getName());
+        case 0:                 // значения параметра
             max_chars = par->getMaxLengtn();
             inputString = par->getStringValue();
             st++;
             break;
 
         case 1:                 // отрисовка имени, значения параметра, строки подсказки
-            // строка подсказки
-            //lcd.setCursor(0, 3);
-            //lcd.print(F("C -> edit  D -> exit"));
-            printTFTText("C -> edit  D -> exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             index = 0;
-            //redrawValueParameter(inputString, max_chars, index);
+			clearScreen();
 			renderParameterView(par, inputString);
+			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             st++;
             break;
 
@@ -361,12 +356,13 @@ bool editMACParameter(Parameter *par) {
             key = kpd.getKey();
             if (key == 'C') {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
-                //lcd.setCursor(0, 3);
-				renderParameterView(par, inputString);
-                //lcd.print(F("* -> E        # -> F"));
-				printTFTText("* -> E   # -> F", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H*2, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-                //lcd.setCursor(index, 1);
-                //lcd.blink();
+
+				inputString = "00:00:00:00:00:00";
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+
+				clearSpace(PADDING, DISPLAY_HEIGHT-HEADER_SPACE_H-PADDING, DISPLAY_WIDTH, PADDING+STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText("* -> E   # -> F", NO_X, DISPLAY_HEIGHT-STRING_SPACE_H-SPACE-PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 st++;
             }
             else if (key == 'D')  {
@@ -376,7 +372,6 @@ bool editMACParameter(Parameter *par) {
                     inputString.toCharArray(buf, max_chars+1);
                     par->setValue(buf);
                 }
-                //lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -392,21 +387,20 @@ bool editMACParameter(Parameter *par) {
                 else if ('#' == key)
                     inputString[index] = 'F';
                 else
-                    inputString[index] = key;
-                //lcd.write(inputString[index]);
+                	inputString[index] = key;
 
                 index++;
                 if (':' == inputString[index]) {
                     index++;
-                    //lcd.setCursor(index, 1);
                 }
 
-				renderParameterView(par, inputString);
-				printTFTText("* -> E   # -> F", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H*2, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+				log_d("inputString: < %s > , index: < %d >", inputString, index);
+
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
                 if (index == max_chars)
                 {
-                    //lcd.noBlink();
                     st = 1;
                 }
             }
