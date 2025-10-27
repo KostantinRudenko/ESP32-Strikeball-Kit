@@ -643,22 +643,16 @@ bool pressAnyKey() {
     static uint8_t st = 0;
     static uint32_t tm = 0;
     static int8_t point;        // 0 - RED; 1 - BLUE
+	static uint16_t speakerStatusLabelPosition = getTextWidth("BLUE:   ", STRING_FONT);
     static bool start;          // нажата кнопка старта игры
     static bool fEmpty = true;
     espnow_msg_t outMsg;
 
     switch (st) {
         case 0:
-            //lcd.clear();
             clearScreen();
-            //lcd.setCursor(2, 0);
-            //lcd.print(F("Press # to start"));
             printTFTText("Press # to start", NO_X, STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            //lcd.setCursor(0, 2);
-            //lcd.print(F(" RED:"));
             printTFTText(" RED:", PADDING, HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-            //lcd.setCursor(0, 3);
-            //lcd.print(F("BLUE:"));
             printTFTText(" BLUE:", PADDING, HEADER_SPACE_H+STRING_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             start = false;
@@ -667,10 +661,7 @@ bool pressAnyKey() {
 
         case 1:                                           // ждем сообщения WiFi подключена
             if (startWiFi()) {
-                //lcd.setCursor(0, 1);
-                //lcd.print("TX power: ");
                 int a = WiFi.getTxPower();
-                //lcd.print(a);
 				printTFTText("TX power: "+(String)a, NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 point = MAX_POINTS;      // текущая точка для зондирования
                 st++;
@@ -679,7 +670,7 @@ bool pressAnyKey() {
 
         case 2:                                           // формируем сообщение для проверки отклика точки
             if (start)
-                st++;
+                st = 5; // replace to st = 5;
             else if (xTaskGetTickCount() - tm > 500 && fEmpty) {
                 outMsg.cmd = PING;
                 point = point < MAX_POINTS - 1 ? point + 1 : 0;
@@ -712,7 +703,7 @@ bool pressAnyKey() {
             break;
 
         case 5:                                 // передача сообщения
-            if (fEmpty) {
+            if (true) { // replace true to fEmpty
                 st = 0;
                 return true;
             }
@@ -722,13 +713,21 @@ bool pressAnyKey() {
     if (st > 1) {
         key = kpd.getKey();
         if (key == '#' && !start) {
-            if (G_arPeerStatus[0] == PLAYER_READY && G_arPeerStatus[1] == PLAYER_READY) {
-            // if (G_arPeerStatus[0] == PLAYER_READY) {
-                tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
-                start = true;
-            }
-        }
-    }
+			if (G_arPeerStatus[0] == PEER_NO_CONNECT)
+				printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			if (G_arPeerStatus[1] == PEER_NO_CONNECT)
+				printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*2+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+
+			tm = xTaskGetTickCount();
+			for (;;) {
+				if (xTaskGetTickCount() - tm > 3000)
+					break;
+			}
+
+            tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
+            start = true;
+    	}
+	}
 
     fEmpty = sendESP_NOW();
     return false;
