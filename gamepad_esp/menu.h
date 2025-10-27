@@ -656,10 +656,10 @@ bool pressAnyKey() {
             printTFTText("Press # to start", NO_X, STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             //lcd.setCursor(0, 2);
             //lcd.print(F(" RED:"));
-            printTFTText(" RED:", 0, HEADER_SPACE_H+STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            printTFTText(" RED:", PADDING, HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             //lcd.setCursor(0, 3);
             //lcd.print(F("BLUE:"));
-            printTFTText(" BLUE:", 0, HEADER_SPACE_H+STRING_SPACE_H+STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            printTFTText(" BLUE:", PADDING, HEADER_SPACE_H+STRING_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             start = false;
             st++;
