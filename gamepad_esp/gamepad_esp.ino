@@ -76,7 +76,7 @@ void TaskMain(void *pvParameters) {
                     G_u8DeviceState = ST_PRESSANYKEY;
                 }
                 else {
-                    G_u8DeviceState = ST_OLDPARS;
+                    G_u8DeviceState = ST_EDIT_PARS;
                 }
                 //break;
 
@@ -94,7 +94,7 @@ void TaskMain(void *pvParameters) {
                 //}
                 break;
 
-            case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
+            /*case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
                 tmp = dialogYesNo(" USED OLD SETTINGS? ");
                 if (DLG_NO == tmp) {
                     G_u8DeviceState = ST_EDIT_PARS;
@@ -102,7 +102,7 @@ void TaskMain(void *pvParameters) {
                 else if (DLG_YES == tmp) {
                     G_u8DeviceState = ST_GAMEMODE;
                 }
-                break;
+                break;*/
 
             case ST_EDIT_PARS:                                          // редактирование параметров
                 G_u8DeviceState += EditParams(&param_list);
