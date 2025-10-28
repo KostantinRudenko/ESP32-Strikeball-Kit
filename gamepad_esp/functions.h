@@ -179,29 +179,14 @@ bool sendESP_NOW() {
 }
 
 void RenderStaticView() {
-	clearSpace(0, 0, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
-	// убрать на clearSpace
+	clearSpace(0, 0, DISPLAY_WIDTH, PADDING+HEADER_SPACE_H, TFT_BLACK);
     switch (G_u8GameMode) {
         case DOMIN:
-			printTFTText("DOMINATION", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            /*
-            lcd.print(F("     DOMINATION     "));
-            lcd.setCursor(0, 1);
-            lcd.print(F("                    "));
-            lcd.setCursor(6, 1);
-            showTimeHMS(lcd, game_timer.Secs());
-
-            lcd.setCursor(5, 2);
-            lcd.print(F("     "));
-            lcd.setCursor(5, 3);
-            lcd.print(F("     "));
-            */
+			printTFTText("DOMINATION", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
             if (G_u8Team != NOONE)
             {
-                //lcd.setCursor(5, 1 + G_u8Team);
-                //lcd.print(F("====>"));
-                printTFTText("====>", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+                printTFTText("====>", NO_X, PADDING+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             }
             break;
 
@@ -233,12 +218,10 @@ void RenderStaticView() {
             */
             if (G_u8GameMode == BOMB)
 				printTFTText("BOMB MODE", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-                //lcd.print(F("      BOMB MODE     "));
             else
 				printTFTText("CONTROL POINT", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-                //lcd.print(F("   CONTROL POINT    "));
-			printTFTText("Game time: ", 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-            printTFTText(String(getTimeHMS(game_timer.Secs())), getTextWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			printTFTText("Game time: " + String(getTimeHMS(game_timer.Secs()), PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            //printTFTText(String(getTimeHMS(game_timer.Secs())), getTextWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             break;
     }
 }
