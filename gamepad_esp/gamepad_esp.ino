@@ -73,7 +73,7 @@ void TaskMain(void *pvParameters) {
                 if (tmp != EDIT_PARAMS)
                 {
                     G_u8GameMode = (modes) tmp;
-                    G_u8DeviceState = ST_PRESSANYKEY;
+                    G_u8DeviceState = ST_PARS2PLAY;
                 }
                 else {
                     G_u8DeviceState = ST_EDIT_PARS;
@@ -105,7 +105,11 @@ void TaskMain(void *pvParameters) {
                 break;*/
 
             case ST_EDIT_PARS:                                          // редактирование параметров
-                G_u8DeviceState += EditParams(&param_list);
+                if (EditParams(&param_list) != 1) {
+                    G_u8DeviceState = ST_GAMEMODE;
+                    break;
+                }
+                G_u8DeviceState++;
                 break;
 
             case ST_SAVEPARS:                                           // запрос на сохранение параметров во Flash
