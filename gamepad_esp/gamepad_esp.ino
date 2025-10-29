@@ -105,11 +105,16 @@ void TaskMain(void *pvParameters) {
                 break;*/
 
             case ST_EDIT_PARS:                                          // редактирование параметров
-                if (EditParams(&param_list) != 1) {
-                    G_u8DeviceState = ST_GAMEMODE;
-                    break;
+                switch (EditParams(&param_list)) {
+                    case 0:
+                        break;
+                    case 1:
+                        G_u8DeviceState++;
+                        break;
+                    case 2:
+                        G_u8DeviceState = ST_GAMEMODE;
+                        break;
                 }
-                G_u8DeviceState++;
                 break;
 
             case ST_SAVEPARS:                                           // запрос на сохранение параметров во Flash
