@@ -703,7 +703,7 @@ bool pressAnyKey() {
             break;
 
         case 5:                                 // передача сообщения
-            if (true) { // replace true to fEmpty
+            if (true) { // TODO replace true to fEmpty
                 st = 0;
                 return true;
             }
@@ -782,7 +782,7 @@ bool delayForStart() {
             break;
 
         case 3:                                         // ждать завершения передачи
-            if (true) { // replace true to fEmpty
+            if (true) { // TODO replace true to fEmpty
                 st = 0;
                 return true;
             }
