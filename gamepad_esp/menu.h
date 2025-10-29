@@ -761,13 +761,13 @@ bool delayForStart() {
             game_timer.Tick();
             if (!game_timer.GetTime()) {                // Если таймер отработал
                 game_timer.Stop();
-				printTFTText("00", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				//printTFTText("00", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 st++;
             }
             else if (game_timer.Secs() != secs) {
                 secs = game_timer.Secs();
-				clearSpace(PADDING, DISPLAY_HEIGHT/2, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
-				printTFTText((String)secs, NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				//clearSpace(PADDING, DISPLAY_HEIGHT/2, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
+				printTFTText(" "+(String)(secs < 10 ? "0"+(String)secs : secs)+" ", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
             break;
