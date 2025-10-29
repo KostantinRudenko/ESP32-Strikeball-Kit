@@ -661,8 +661,8 @@ bool pressAnyKey() {
 
         case 1:                                           // ждем сообщения WiFi подключена
             if (startWiFi()) {
-                int a = WiFi.getTxPower();
-				printTFTText("TX power: "+(String)a, NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+                //int a = WiFi.getTxPower();
+				//printTFTText("TX power: "+(String)a, NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT); // TODO move TX Power to Admin menu
                 point = MAX_POINTS;      // текущая точка для зондирования
                 st++;
             }
