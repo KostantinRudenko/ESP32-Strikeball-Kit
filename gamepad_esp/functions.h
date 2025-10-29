@@ -92,24 +92,22 @@ String prapare3DigitsIntVar(uint16_t var) {
 	return resultString;
 }
 
-uint32_t ProcessButton(const Button button, uint32_t *progress, uint32_t *time) {
+uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
     if (button.isReleased()) {
         *progress = 0;
         *time = xTaskGetTickCount();
+        clearSpace(0, PADDING+HEADER_SPACE_H, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
         return 0;
     }
 
-    if (*progress >= PROGRESS_BAR_WIDTH) return PROGRESS_BAR_WIDTH;
     if (*progress == 0) {
-        //lcd.setCursor(0, 1);
-        //lcd.print(F("                    "));
-        clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE, TFT_BLACK);
+        clearSpace(0, PADDING, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE, TFT_BLACK);
     }
 
     uint32_t var = (xTaskGetTickCount() - *time);
     uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, DISPLAY_WIDTH);
 
-    while (*progress < new_progress) {
+    while (*progress < new_progress && *progress < MAX_PROGRESS) {
 
 		if (*progress % 10 == 0) {
 			espnow_msg_t msg;
@@ -119,20 +117,19 @@ uint32_t ProcessButton(const Button button, uint32_t *progress, uint32_t *time) 
       // тут надо зафигачить отправку сообщений на ленту
 		}
 
-        //lcd.setCursor(*progress / 5, 1);
-        //lcd.print((char)(*progress % 5));
-		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, *progress, PROGRESS_BAR_HEIGHT, TFT_WHITE);
+		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, map(*progress, 0, MAX_PROGRESS, 0, PROGRESS_BAR_WIDTH), PROGRESS_BAR_HEIGHT, TFT_WHITE);
         tone(BUZZER_PIN, *progress * 25);
         *progress += 1;
+		log_d("progress: %d; progress bar width: %d", *progress, map(*progress, 0, MAX_PROGRESS, 0, PROGRESS_BAR_WIDTH));
+
+		if (*progress >= MAX_PROGRESS) {
+			clearSpace(0, PROGRESS_BAR_Y_POSITION, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
+			*progress = MAX_PROGRESS;
+			return MAX_PROGRESS;
+		}
     }
 
-    if (*progress >= PROGRESS_BAR_WIDTH) {
-        // *progress = LCD_H_DOTS;
-        //lcd.setCursor(0, 1);
-        //lcd.print(F("                   "));
-		clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE, TFT_BLACK);
-        return PROGRESS_BAR_WIDTH;
-    }
+
     return *progress * 100UL / PROGRESS_BAR_WIDTH;
 }
 
@@ -179,15 +176,19 @@ bool sendESP_NOW() {
 }
 
 void RenderStaticView() {
-	clearSpace(0, 0, DISPLAY_WIDTH, PADDING+HEADER_SPACE_H, TFT_BLACK);
+	//clearSpace(0, 0, DISPLAY_WIDTH, PADDING+HEADER_SPACE_H, TFT_BLACK);
     switch (G_u8GameMode) {
         case DOMIN:
 			printTFTText("DOMINATION", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
-            if (G_u8Team != NOONE)
-            {
-                printTFTText("====>", NO_X, PADDING+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+
+            if (G_u8Team != NOONE) {
+                printTFTText("====>", NO_X, PADDING+HEADER_SPACE_H*G_u8Team+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             }
+			else {
+				printTFTText("           ", NO_X, PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				printTFTText("           ", NO_X, PADDING+HEADER_SPACE_H*2+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			}
             break;
 
         case DOMIN_PRO:
@@ -220,7 +221,7 @@ void RenderStaticView() {
 				printTFTText("BOMB MODE", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             else
 				printTFTText("CONTROL POINT", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-			printTFTText("Game time: " + String(getTimeHMS(game_timer.Secs()), PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			printTFTText("Game time: "+(String)getTimeHMS(game_timer.Secs()), PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             //printTFTText(String(getTimeHMS(game_timer.Secs())), getTextWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             break;
     }
@@ -320,12 +321,12 @@ bool Domination(ListParameter* params, team_t* winner) {
     static uint8_t st = 0;
     static uint32_t secs = game_timer.Secs();
 	static uint16_t teamTimerPositionX = DISPLAY_WIDTH-getTextWidth("00:00:00   ", HEADER_FONT)-PADDING;
-	static uint16_t redTimerPositionY = PADDING+HEADER_SPACE_H+STRING_SPACE_H;
-	static uint16_t blueTimerPositionY = PADDING+HEADER_SPACE_H+STRING_SPACE_H+HEADER_SPACE_H;
+	static uint16_t redTimerPositionY = PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE;
+	static uint16_t blueTimerPositionY = PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE+HEADER_SPACE_H;
     static uint32_t time_press_red = xTaskGetTickCount();
     static uint32_t time_press_blue = xTaskGetTickCount();
-    static uint32_t progressRed = 0;
-    static uint32_t progressBlue = 0;
+    static uint8_t progressRed = 0;
+    static uint8_t progressBlue = 0;
     uint8_t redValue, blueValue;
     static uint32_t prev; // пред. значения таймера команды, владеющей точкой
     static uint8_t point; // 0,1
@@ -350,9 +351,9 @@ bool Domination(ListParameter* params, team_t* winner) {
 
             i8CheckTimeCount = getTimeMarker(secs);
 
-			printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-			printTFTText(team_names[RED], PADDING, PADDING+HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-			printTFTText(team_names[BLUE], PADDING, PADDING+HEADER_SPACE_H*2+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			printTFTText(team_names[RED], PADDING, PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText(team_names[BLUE], PADDING, PADDING+HEADER_SPACE_H*2+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
 
             // таймеры команд
@@ -370,14 +371,14 @@ bool Domination(ListParameter* params, team_t* winner) {
 
         case 2:   // статика - отображаем время
             if (redValue || blueValue) {
-				clearSpace(0, 0, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
+				//clearSpace(0, PADDING, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
                 if (G_u8Team == NOONE) {
-					printTFTText("ARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+					printTFTText("    ARMING    ", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     outMsg.data[0] = BROADCAST;
                     outMsg.data[1] = MP3_CAP_POINT;
                 }
                 else {
-					printTFTText("DISARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+					printTFTText("DISARMING", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     // Проигрываем на базе команды, которая не деактивирует точку
                     outMsg.data[0] = G_u8Team - 1;
                     outMsg.data[1] = MP3_CAP_OUR_POINT;
@@ -396,11 +397,13 @@ bool Domination(ListParameter* params, team_t* winner) {
                         timerRed.Start();
                         timerBlue.Stop();
                         G_u8Team = RED;
+						log_d("red team timer started. team is RED");
                     }
                     else if (blueValue >= 100) {
                         timerBlue.Start();
                         timerRed.Stop();
                         G_u8Team = BLUE;
+						log_d("blue team timer started. team is BLUE");
                     }
 
                     outMsg.cmd = PLAY_TRACK;
@@ -468,14 +471,14 @@ bool Domination(ListParameter* params, team_t* winner) {
             if (game_timer.Secs() != secs) {
 				//clearSpace(0, HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H, TFT_BLACK);
                 secs = game_timer.Secs();
-                printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+                printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
 
             if (G_u8Team == RED) {
                 timerRed.Tick();
                 if (timerRed.Secs() != prev) {
-					clearSpace(teamTimerPositionX, redTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
+					//clearSpace(teamTimerPositionX, redTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
                     prev = timerRed.Secs();
 					printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 }
@@ -484,7 +487,7 @@ bool Domination(ListParameter* params, team_t* winner) {
                 timerBlue.Tick();
                 if (timerBlue.Secs() != prev) {
                     prev = timerBlue.Secs();
-					clearSpace(teamTimerPositionX, blueTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
+					//clearSpace(teamTimerPositionX, blueTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
 					printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
                 }
@@ -530,8 +533,8 @@ bool Bomb(ListParameter* params, team_t* winner) {
     static uint32_t time_press_red = xTaskGetTickCount();
     static uint32_t time_press_blue = xTaskGetTickCount();
     static uint32_t start_bomb_time;
-    static uint32_t progressRed = 0;
-    static uint32_t progressBlue = 0;
+    static uint8_t progressRed = 0;
+    static uint8_t progressBlue = 0;
     uint8_t redValue, blueValue;
 
     static bool fEmpty = true;
