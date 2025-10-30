@@ -61,7 +61,15 @@ bool sendESP_NOW(bool* res, msg_esp_now_t* msg) {
 }
 
 void useLed(uint8_t command, msg_esp_now_t* params) {
+    /*
+     * data[0] -> COLOR
+     * data[1] -> TEAM NUMBER
+     * */
     switch (command) {
+        case CMD_FillStrip:
+            LightLeds(LEDS_AMOUNT, params->data[0]);
+            break;
+
         case CMD_FillStripByProgress:
             FillStripByProgress(params->data[0], params->data[1]);
             break;
@@ -107,7 +115,6 @@ void TaskMain(void *pvParameters) {
 
             case ST_WAIT_CMD:       // ожидание сообщения, парсинг
                 // Читаем данные из очереди. Значение 0 в 3-м параметре означает, что не ждем, если очередь пуста.
-                // s = xQueueReceive(queue_in, &qitem, 0);
                 s = xQueueReceive(queue_in, &qitem, portMAX_DELAY);
                 // если данные из очереди получены
                 if (s == pdPASS) {
@@ -130,17 +137,17 @@ void TaskMain(void *pvParameters) {
 
 #pragma region ______________________________ WiFi
 
-void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
     if (status == ESP_NOW_SEND_SUCCESS)
         xTaskNotify(hTaskMain, NTF_SEND_OK_WIFI, eSetBits);
     else
         xTaskNotify(hTaskMain, NTF_SEND_FAIL_WIFI, eSetBits);
 }
 
-void OnDataRecv(const uint8_t* mac, const uint8_t* incomingData, int len) {
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
     msg_esp_now_t qitem;
 
-    memcpy(&qitem, incomingData, sizeof(msg_esp_now_t));
+    memcpy(&qitem, data, sizeof(msg_esp_now_t));
     if (xQueueSendToBack(queue_in, &qitem, 0) != pdPASS)
         log_e("Input queue overflow");
 }
@@ -224,12 +231,13 @@ void setup() {
     assert(queue_in);
     if (queue_in != NULL) {
 
-        StartStripAnimation();
+        StripAnimation();
         ClearStrip();
 
         xTaskCreatePinnedToCore(TaskMain, "TaskMain", 10000, NULL, 1, &hTaskMain, 1);
         xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
     }
+    log_i("led strip started");
 }
 
 void loop() {}

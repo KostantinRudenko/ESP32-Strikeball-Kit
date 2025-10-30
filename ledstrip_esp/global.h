@@ -3,7 +3,7 @@
 #define LED_TYPE     WS2812B
 #define COLOR_ORDER  GRB
 
-#define LED_OFF      CRGB(0,0,0)
+#define LEDS_OFF      CRGB(0,0,0)
 
 #define RED_RGB      CRGB(255,0,0)
 #define GREEN_RGB    CRGB(0,255,0)
@@ -35,9 +35,6 @@ const uint8_t MAX_LED_CONTRAST = 255;
 const uint8_t MAX_PROGRESS = 100;
 
 const uint16_t ONE_SECOND_DELAY = 1000;
-
-const uint8_t RED_TEAM_NUM 	= 0;
-const uint8_t BLUE_TEAM_NUM = 1;
 
 const uint8_t NTF_SEND_WIFI       = 0b00000001;
 const uint8_t NTF_RECV_WIFI       = 0b00000010;
