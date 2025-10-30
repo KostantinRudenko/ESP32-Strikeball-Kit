@@ -173,7 +173,7 @@ void loop() {}
 
 #pragma region ________________________________ WiFi_task
 
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
     espnow_event_t evt;
     evt.id_cb = ESPNOW_SEND_CB;
     evt.status = status;
@@ -184,10 +184,10 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
     espnow_event_t evt;
 
-    if (mac == NULL || incomingData == NULL || len <= 0) {
+    if (incomingData == NULL || len <= 0) {
         log_e("Receive cb arg error");
         return;
     }
