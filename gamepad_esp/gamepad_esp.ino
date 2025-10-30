@@ -23,6 +23,7 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
 #include <TFT_eSPI.h>
 #include "esp_log.h"
+#include "esp_task_wdt.h"
 
 #define	IMPLEMENTATION	FIFO
 
@@ -173,7 +174,7 @@ void loop() {}
 
 #pragma region ________________________________ WiFi_task
 
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
     espnow_event_t evt;
     evt.id_cb = ESPNOW_SEND_CB;
     evt.status = status;
@@ -184,10 +185,10 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
     espnow_event_t evt;
 
-    if (mac == NULL || incomingData == NULL || len <= 0) {
+    if (incomingData == NULL || len <= 0) {
         log_e("Receive cb arg error");
         return;
     }
@@ -446,6 +447,8 @@ void setup(void) {
 
     log_i("Gamepad start.");
 
+    esp_task_wdt_deinit();
+
 // uint32_t sec;
 // int8_t t;
 
@@ -506,7 +509,7 @@ preferences.begin("my-app", true);
         // ESP32PWM::allocateTimer(2);
         // ESP32PWM::allocateTimer(3);
 
-    ledcSetup(BUZZER_PWM_CHANNEL, 1000, 8);
+    // ledcSetup(BUZZER_PWM_CHANNEL, 1000, 8);
     tone(BUZZER_PIN, 10, 50);
     delay(100);
 

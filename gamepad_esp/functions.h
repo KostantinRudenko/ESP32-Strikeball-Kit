@@ -113,8 +113,9 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 			espnow_msg_t msg;
 			msg.cmd = LIGHT_STRIP;
 			msg.data[0] = G_u8Team;
-			msg.data[1] = *progress;
-      // тут надо зафигачить отправку сообщений на ленту
+			msg.data[2] = *progress;
+			if (!q_out_msg.push(&msg))
+				log_e("Error: q_out_msg is full");
 		}
 
 		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, map(*progress, 0, MAX_PROGRESS, 0, PROGRESS_BAR_WIDTH), PROGRESS_BAR_HEIGHT, TFT_WHITE);
