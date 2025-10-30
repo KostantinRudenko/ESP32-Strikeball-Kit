@@ -9,7 +9,7 @@
 
 #pragma region ______________________________ Constants
 
-#define GamepadMAC "80:F3:DA:61:AC:70"
+#define LedStripMAC "80:F3:DA:63:51:20"
 
 typedef struct {
     uint8_t cmd;
@@ -35,11 +35,11 @@ esp_now_peer_info_t peerInfo;
 
 #pragma endregion Variables
 
-void OnDataSent(const uint8_t* mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
     if (status == ESP_NOW_SEND_SUCCESS) {
-        Serial.println("sent successfully");
+        log_i("sent successfully");
     } else {
-        Serial.println("sent NOT successfully");
+        log_i("sent NOT successfully");
     }
 }
 
@@ -72,13 +72,13 @@ bool connectToWiFi() {
 
 void setup() {
 
-    Serial.begin(9600);
+    Serial.begin(115200);
 
-    MacStringToByteArray(GamepadMAC, G_aru8GamepadMAC);
+    MacStringToByteArray(LedStripMAC, G_aru8GamepadMAC);
 
     connectToWiFi();
 
-    Serial.println("init end");
+    log_i("sender is initialized");
 }
 
 void loop() {
