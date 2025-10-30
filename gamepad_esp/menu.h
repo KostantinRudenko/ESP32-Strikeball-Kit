@@ -1,39 +1,50 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
+#include "functions.h"
+#include "global.h"
 #pragma region ________________________________ Constants
 
 const char *mode_names[NUM_MODES]  = {
    "Domination",
    "Domination Pro",
    "Bomb mode",
-   "Control Point"
+   "Control Point",
+   "Edit Parameters"
 };
 
+const String GREETING_STRING = "INTELARMS";
 
-const char *strGreeting[LCD_ROWS]  = {
-    // экран приветствия
-    //01234567890123456789
-    "   DOMINATION PRO ",
-    "    by Intelarms    ",
-    "   WIRELESS PROP    ",
-    "       2024         "
-};
+const uint8_t gameModeChoosingPageSizeH = 5; // кол-во режимов, которые помещаються на одной странице
+const uint8_t paramChoosingPageSize = 5;
 
 #pragma endregion Constants
 
+void renderLines(uint8_t& cur, uint8_t& prev_cur) {
+				// убираем линии вокруг предидущего режима
+				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				clearSpace(PADDING, PADDING+(prev_cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+
+				// рисуем линию сверху от выбраного режима
+				clearSpace(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H-SPACE/2, TFT_WHITE);
+
+				// рисуем круг возле выбраного режима
+				clearSpace(PADDING, PADDING, RADIUS*2+SPACE, DISPLAY_HEIGHT, TFT_BLACK);
+				tft.fillCircle(PADDING+RADIUS+SPACE/2, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+RADIUS+SPACE/2, RADIUS, CIRCLE_COLOR);
+
+				// рисуем линию снизу от выбраного режима
+				clearSpace(PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE, DISPLAY_WIDTH, SPACE, TFT_BLACK);
+				tft.drawLine(PADDING+RADIUS*2+SPACE, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, DISPLAY_WIDTH-PADDING, PADDING+(cur%gameModeChoosingPageSizeH)*STRING_SPACE_H+STRING_SPACE_H-SPACE/2, TFT_WHITE);
+}
 
 void showGreeting(uint8_t view_sec = 3) {
   //----------------------------------------------------------------------------+
   //                     Отрисовка экрана приветствия                           |
   //  [in] view_sec - время индикации экрана в с. По умолчанию 3 с.             |
   //----------------------------------------------------------------------------+
-  lcd.clear();
-  for (uint8_t r = 0; r < LCD_ROWS; r++)
-  {
-    lcd.setCursor(0, r);
-    lcd.print(strGreeting[r]);
-  }
+  clearScreen();
+  printTFTText(GREETING_STRING, NO_X, NO_Y, CENTER_BY_X, CENTER_BY_Y, STRING_FONT);
   tone(BUZZER_PIN, 3000, 100);
   vTaskDelay(pdMS_TO_TICKS(150));
   tone(BUZZER_PIN, 3000, 100);
@@ -55,9 +66,13 @@ int8_t setGameMode(int8_t mode) {
     +--------------------+
     */
     static uint8_t st = 0;
+	static bool isEnd = false;
     static uint8_t cur;
+	static uint8_t prev_cur;
     static uint8_t page;
+	static uint16_t textColor;
 
+	for (;;) {
     switch (st) {
         case 0:
             cur = mode;
@@ -65,18 +80,19 @@ int8_t setGameMode(int8_t mode) {
             break;
 
         case 1:            // отрисовка страницы режимов
-            lcd.clear();
-            page = cur / LCD_ROWS;
-            for (uint8_t row = 0; row < LCD_ROWS; row++) {
-                if ((page*LCD_ROWS + row) < NUM_MODES)
+			clearScreen();
+            page = cur / gameModeChoosingPageSizeH;
+            for (uint8_t row = 0; row < gameModeChoosingPageSizeH; row++) {
+                if ((page*gameModeChoosingPageSizeH + row) < NUM_MODES)
                 {
-                    lcd.setCursor(1, row);
-                    lcd.print(mode_names[page*LCD_ROWS + row]);
+					//if (row == cur % gameModeChoosingPageSizeH)
+						// выбраный режим
+						//tft.fillCircle(RADIUS*2+SPACE, row*STRING_SPACE_H-RADIUS, RADIUS, CIRCLE_COLOR, BG_CIRCLE_COLOR);
+
+					printTFTText(mode_names[page*gameModeChoosingPageSizeH + row], RADIUS*2+SPACE, row*STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
             }
-            // draw cursor in current position
-            lcd.setCursor(0, cur % LCD_ROWS);
-            lcd.write('>');
+			renderLines(cur, prev_cur);
             st++;
             break;
 
@@ -89,38 +105,61 @@ int8_t setGameMode(int8_t mode) {
                     st = 0;
                     return cur;
                 }
-                // clear cursor in current position
-                lcd.setCursor(0, cur % LCD_ROWS);
-                lcd.write(' ');
 
                 // change current position
-                if ('A' == key)                                 // A - up
+                if ('A' == key) {                               // A - up
                     cur = cur ? cur - 1 : NUM_MODES - 1;
-                else                                            // B - dw
+					prev_cur = (cur+1+NUM_MODES)%NUM_MODES;
+				}
+                else {                                          // B - dw
                     cur = cur < NUM_MODES - 1? cur + 1 : 0;
+					prev_cur = (cur-1+NUM_MODES)%NUM_MODES;
+				}
 
-                if (page == cur / LCD_ROWS)
+                if (page != cur / gameModeChoosingPageSizeH)
                 {
-                    // page not change - draw cursor in new position on the
-                    lcd.setCursor(0, cur % LCD_ROWS);
-                    lcd.write('>');
-                }
-                else
                     st--;                                       // change page
+				}
+
+
+				renderLines(cur, prev_cur);
             }
             break;
+		}
+		if (isEnd) break;
     }
     return -1;
 }
 
-
+/*
 void redrawValueParameter(String s, uint8_t max_digits, uint8_t pos) {
     lcd.setCursor(0, 1);
     lcd.print(s);
     for (uint8_t i = s.length(); i < max_digits; i++)
         lcd.write(' ');
     lcd.setCursor(pos, 1);
+}*/
+
+void renderParameterView(Parameter *par, String value) {
+
+	char type = par->getUnit();
+
+  	//clearScreen();
+	printTFTText(par->getName(), PADDING, PADDING, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+	if (type == 's') {
+		printTFTText("seconds", PADDING+ONE_DIGIT_WIDTH*(par->getMaxLengtn()+1), PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	}
+	else if (type == 'm') {
+		printTFTText("minutes", PADDING+ONE_DIGIT_WIDTH*(par->getMaxLengtn()+1), PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	}
+
+	if (par->getType() != 'm')
+		printTFTText("[D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H-PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	else
+		printTFTText("[C] - edit [D] - exit", NO_X, DISPLAY_HEIGHT-HEADER_SPACE_H-PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 }
+
+// Надо сделать вместо функции сверху рендер изображения параметров
 
 
 bool editIntParameter(Parameter *par) {
@@ -140,36 +179,29 @@ bool editIntParameter(Parameter *par) {
     static uint8_t st = 0;
     static uint8_t max_chars;       // max число символов в значении параметра
     static char u;                  // единицы измерения параметра
-    static String inputString;
+    static String inputString = "";
     static uint8_t index;
     char key;
 
     switch (st) {
         case 0:
-            lcd.clear();
+			clearScreen();
+            //lcd.clear();
             // имя параметра
-            lcd.print(par->getName());
+            //lcd.print(par->getName());
 
             // мах длина значения параметра
             max_chars = par->getMaxLengtn();
-
-            // единицы измерения параметра
-            lcd.setCursor(max_chars + 1, 1);
-            u = par->getUnit();
-            if (u == 's')
-                lcd.print(F("seconds"));
-            else if (u == 'm')
-                lcd.print(F("minutes"));
-
-            lcd.setCursor(5, 3);
-            lcd.print(F("[D] - exit"));
+			log_d("Max chars: %d", max_chars);
 
             // значение параметра
             inputString = String(par->getIntValue());
+			log_d("input string: %s", inputString);
             index = 0;
-            redrawValueParameter(inputString, max_chars, index);
 
-            lcd.blink();
+			renderParameterView(par, inputString);
+			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+
             st++;
             break;
 
@@ -184,10 +216,14 @@ bool editIntParameter(Parameter *par) {
                 else if (inputString.length() < max_chars)            // если не превысили допустимую длину параметра в символах
                     inputString += key;
 
-                if (++index >= max_chars)
-                    index = 0;
+                if (++index > max_chars) {
+                    index = 1;
+					inputString = String(key);
+				}
+				log_d("inputString: < %s > , index: < %d >", inputString, index);
 
-                redrawValueParameter(inputString, max_chars, index);
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             }
             else if (key == 'D') {
@@ -197,7 +233,7 @@ bool editIntParameter(Parameter *par) {
                     par->setValue(inputString.toInt());
                     par->isValidRange();
                 }
-                lcd.noBlink();
+                //lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -230,18 +266,18 @@ bool editStrParameter(Parameter *par) {
 
     switch (st) {
         case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            lcd.clear();
-            lcd.print(par->getName());
-            max_chars = par->getMaxLengtn();
-            inputString = par->getStringValue();
-
-            lcd.setCursor(0, 3);
-            lcd.print(F("      D -> exit     "));
+			clearScreen();
 
             // значение параметра
-            index = 0;
-            redrawValueParameter(inputString, max_chars, index);
-            lcd.blink();
+			inputString = par->getStringValue();
+			max_chars = par->getMaxLengtn();
+
+			log_d("Input String: < %s > Max chars: < %d >", inputString, max_chars);
+
+            index = 9; // индекс больше максимального значения для того что б при начале редактирования строка очищалась и выводились клавиша+0000000
+
+            renderParameterView(par, inputString);
+			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             st++;
             break;
 
@@ -254,7 +290,6 @@ bool editStrParameter(Parameter *par) {
                     inputString.toCharArray(buf, max_chars+1);
                     par->setValue(buf);
                 }
-                lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -263,12 +298,18 @@ bool editStrParameter(Parameter *par) {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
                 par->changed = true;
                 inputString[index] = key;
-                lcd.write(inputString[index]);
-                if (++index == max_chars)
+
+                if (++index > max_chars)
                 {
-                    index = 0;
-                    lcd.setCursor(index,1);
+                    index = 1;
+					inputString = String(key) + "0000000";
+											//   1234567
                 }
+
+				log_d("inputString: < %s > , index: < %d >", inputString, index);
+
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             }
             break;
     }
@@ -297,20 +338,17 @@ bool editMACParameter(Parameter *par) {
     char key;
 
     switch (st) {
-        case 0:                 // отрисовка имени, значения параметра, строки подсказки
-            lcd.clear();
-            lcd.print(par->getName());
+        case 0:                 // значения параметра
             max_chars = par->getMaxLengtn();
             inputString = par->getStringValue();
             st++;
             break;
 
         case 1:                 // отрисовка имени, значения параметра, строки подсказки
-            // строка подсказки
-            lcd.setCursor(0, 3);
-            lcd.print(F("C -> edit  D -> exit"));
             index = 0;
-            redrawValueParameter(inputString, max_chars, index);
+			clearScreen();
+			renderParameterView(par, inputString);
+			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             st++;
             break;
 
@@ -318,10 +356,13 @@ bool editMACParameter(Parameter *par) {
             key = kpd.getKey();
             if (key == 'C') {
                 tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
-                lcd.setCursor(0, 3);
-                lcd.print(F("* -> E        # -> F"));
-                lcd.setCursor(index, 1);
-                lcd.blink();
+
+				inputString = "00:00:00:00:00:00";
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+
+				clearSpace(PADDING, DISPLAY_HEIGHT-HEADER_SPACE_H-PADDING, DISPLAY_WIDTH, PADDING+STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText("* -> E   # -> F", NO_X, DISPLAY_HEIGHT-STRING_SPACE_H-SPACE-PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 st++;
             }
             else if (key == 'D')  {
@@ -331,7 +372,6 @@ bool editMACParameter(Parameter *par) {
                     inputString.toCharArray(buf, max_chars+1);
                     par->setValue(buf);
                 }
-                lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -347,18 +387,20 @@ bool editMACParameter(Parameter *par) {
                 else if ('#' == key)
                     inputString[index] = 'F';
                 else
-                    inputString[index] = key;
-                lcd.write(inputString[index]);
+                	inputString[index] = key;
 
                 index++;
                 if (':' == inputString[index]) {
                     index++;
-                    lcd.setCursor(index, 1);
                 }
+
+				log_d("inputString: < %s > , index: < %d >", inputString, index);
+
+				clearSpace(PADDING, PADDING+HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H+SPACE, TFT_BLACK);
+				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
                 if (index == max_chars)
                 {
-                    lcd.noBlink();
                     st = 1;
                 }
             }
@@ -368,7 +410,7 @@ bool editMACParameter(Parameter *par) {
 }
 
 
-void drawIntValueParameter(uint32_t ival, uint8_t row) {
+/*void drawIntValueParameter(uint32_t ival, uint8_t row) {
     //----------------------------------------------------------------------------+
     //   Отрисовка значения параметра в заданной строке                           |
     //  ival - значение параметра                                                 |
@@ -387,7 +429,7 @@ void drawIntValueParameter(uint32_t ival, uint8_t row) {
     // }
     lcd.setCursor(0, row);
     lcd.print(ival);
-}
+}*/
 
 
 int8_t EditParams(ListParameter* params) {
@@ -406,6 +448,7 @@ int8_t EditParams(ListParameter* params) {
     static uint8_t st = 0;
     static uint8_t NUMS;                                    // число параметров в режиме
     static uint8_t cur;                                     // номер текущего параметра (0..NUMS-1)
+	static uint8_t prev_cur;
     static uint8_t page;                                    // номер страницы параметров (0..NUMS-1/4)
 
     char key;
@@ -420,18 +463,21 @@ int8_t EditParams(ListParameter* params) {
             break;
 
         case 1:                           // отрисовка страницы имен параметров
-            lcd.clear();
-            page = cur / LCD_ROWS;
-            for (uint8_t row = 0; row < LCD_ROWS; row++) {
-                if ((page*LCD_ROWS + row) < NUMS) {
-                    lcd.setCursor(1, row);
-                    lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
+            //lcd.clear();
+            clearScreen();
+            page = cur / paramChoosingPageSize;
+            for (uint8_t row = 0; row < paramChoosingPageSize; row++) {
+                if ((page*paramChoosingPageSize + row) < NUMS) {
+                    //lcd.setCursor(1, row);
+                    //lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
+                    printTFTText(params->parameters[page*paramChoosingPageSize + row]->getName(), RADIUS*2+SPACE, row*STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
             }
 
             // draw cursor in current position
-            lcd.setCursor(0, cur % LCD_ROWS);
-            lcd.write('>');
+            //lcd.setCursor(0, cur % LCD_ROWS);
+            //lcd.write('>');
+			renderLines(cur, prev_cur);
             st++;
             break;
 
@@ -455,22 +501,29 @@ int8_t EditParams(ListParameter* params) {
                 }
 
                 // clear cursor in current position
-                lcd.setCursor(0, cur % LCD_ROWS);
-                lcd.write(' ');
+                //lcd.setCursor(0, cur % LCD_ROWS);
+                //lcd.write(' ');
 
                 // change current position
-                if ('A' == key)                                 // A - up
+                if ('A' == key) {                               // A - up
                     cur = cur ? cur - 1 : NUMS - 1;
-                else                                            // B - dw
+					prev_cur = (cur+1+NUM_MODES)%NUM_MODES;
+				}
+                else {                                          // B - dw
                     cur = cur < NUMS - 1? cur + 1 : 0;
+					prev_cur = (cur-1+NUM_MODES)%NUM_MODES;
+				}
 
-                if (page == cur / LCD_ROWS) {
+				renderLines(cur, prev_cur);
+
+                if (page != cur / paramChoosingPageSize) {
                     // page not change - draw cursor in new position on the
-                    lcd.setCursor(0, cur % LCD_ROWS);
-                    lcd.write('>');
-                }
-                else
+                    //lcd.setCursor(0, cur % LCD_ROWS);
+                    //lcd.write('>');
                     st--;                                       // change page
+                }
+                //else
+                    //st--;                                       // change page
             }
             break;
 
@@ -514,12 +567,16 @@ uint8_t dialogYesNo(String question) {
   static uint8_t st = 0;
   if (st == 0)
   {
-    lcd.clear();
-    lcd.setCursor(0, 1);
+    clearScreen();
+    //lcd.clear();
+    //lcd.setCursor(0, 1);
  //         //"01234567890123456789"
-    lcd.print(question);
-    lcd.setCursor(0, 3);
-    lcd.print("[*] - NO   [#] - YES");
+    //lcd.print(question);
+    //lcd.setCursor(0, 3);
+    //lcd.print("[*] - NO   [#] - YES");
+	printTFTText(question, NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+	printTFTText("[*] - NO  [#] - YES", NO_X, DISPLAY_HEIGHT/2+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+
     st++;
   }
   else
@@ -537,10 +594,14 @@ uint8_t dialogYesNo(String question) {
 
 
 void showMsg(String line1, String line2, uint32_t tm = 2000) {
-  lcd.clear();
-  lcd.print(line1);
-  lcd.setCursor(0, 2);
-  lcd.print(line2);
+  //lcd.clear();
+  clearScreen();
+  //lcd.print(line1);
+  printTFTText("Message", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+  printTFTText(line1, NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+  //lcd.setCursor(0, 2);
+  //lcd.print(line2);
+  printTFTText(line2, NO_X, HEADER_SPACE_H+STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
   vTaskDelay(pdMS_TO_TICKS(tm));
 }
 
@@ -582,19 +643,17 @@ bool pressAnyKey() {
     static uint8_t st = 0;
     static uint32_t tm = 0;
     static int8_t point;        // 0 - RED; 1 - BLUE
+	static uint16_t speakerStatusLabelPosition = getTextWidth("BLUE:   ", STRING_FONT);
     static bool start;          // нажата кнопка старта игры
     static bool fEmpty = true;
     espnow_msg_t outMsg;
 
     switch (st) {
         case 0:
-            lcd.clear();
-            lcd.setCursor(2, 0);
-            lcd.print(F("Press # to start"));
-            lcd.setCursor(0, 2);
-            lcd.print(F(" RED:"));
-            lcd.setCursor(0, 3);
-            lcd.print(F("BLUE:"));
+            clearScreen();
+            printTFTText("Press # to start", NO_X, STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            printTFTText(" RED:", PADDING, HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            printTFTText(" BLUE:", PADDING, HEADER_SPACE_H+STRING_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             start = false;
             st++;
@@ -602,10 +661,8 @@ bool pressAnyKey() {
 
         case 1:                                           // ждем сообщения WiFi подключена
             if (startWiFi()) {
-                lcd.setCursor(0, 1);
-                lcd.print("TX power: ");
-                int a = WiFi.getTxPower();
-                lcd.print(a);
+                //int a = WiFi.getTxPower();
+				//printTFTText("TX power: "+(String)a, NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT); // TODO move TX Power to Admin menu
                 point = MAX_POINTS;      // текущая точка для зондирования
                 st++;
             }
@@ -613,7 +670,7 @@ bool pressAnyKey() {
 
         case 2:                                           // формируем сообщение для проверки отклика точки
             if (start)
-                st++;
+                st = 5; // replace to st = 5;
             else if (xTaskGetTickCount() - tm > 500 && fEmpty) {
                 outMsg.cmd = PING;
                 point = point < MAX_POINTS - 1 ? point + 1 : 0;
@@ -646,7 +703,7 @@ bool pressAnyKey() {
             break;
 
         case 5:                                 // передача сообщения
-            if (fEmpty) {
+            if (true) { // TODO replace true to fEmpty
                 st = 0;
                 return true;
             }
@@ -656,13 +713,21 @@ bool pressAnyKey() {
     if (st > 1) {
         key = kpd.getKey();
         if (key == '#' && !start) {
-            if (G_arPeerStatus[0] == PLAYER_READY && G_arPeerStatus[1] == PLAYER_READY) {
-            // if (G_arPeerStatus[0] == PLAYER_READY) {
-                tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
-                start = true;
-            }
-        }
-    }
+			if (G_arPeerStatus[0] == PEER_NO_CONNECT)
+				printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			if (G_arPeerStatus[1] == PEER_NO_CONNECT)
+				printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*2+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+
+			tm = xTaskGetTickCount();
+			for (;;) {
+				if (xTaskGetTickCount() - tm > 3000)
+					break;
+			}
+
+            tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
+            start = true;
+    	}
+	}
 
     fEmpty = sendESP_NOW();
     return false;
@@ -685,8 +750,8 @@ bool delayForStart() {
 
     switch (st) {
         case 0:                                         // чтобы не создавать новый, используем таймер игры для задержки автозапуска
-            lcd.clear();
-            lcd.print(F(" Left seconds to go"));
+            clearScreen();
+            printTFTText(" Left seconds to go", NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             game_timer.SetTime(DELAY_START);
             game_timer.Start();
             st++;
@@ -696,16 +761,13 @@ bool delayForStart() {
             game_timer.Tick();
             if (!game_timer.GetTime()) {                // Если таймер отработал
                 game_timer.Stop();
-                lcd.setCursor(9, 1);
-                lcd.print("00");
+				//printTFTText("00", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 st++;
             }
             else if (game_timer.Secs() != secs) {
-                lcd.setCursor(9, 1);
                 secs = game_timer.Secs();
-                if (secs < 10)
-                    lcd.write('0');
-                lcd.print(secs);
+				//clearSpace(PADDING, DISPLAY_HEIGHT/2, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
+				printTFTText(" "+(String)(secs < 10 ? "0"+(String)secs : secs)+" ", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
             break;
@@ -720,7 +782,7 @@ bool delayForStart() {
             break;
 
         case 3:                                         // ждать завершения передачи
-            if (fEmpty) {
+            if (true) { // TODO replace true to fEmpty
                 st = 0;
                 return true;
             }
@@ -731,29 +793,18 @@ bool delayForStart() {
 }
 
 
-void buildParameterList(modes mode, ListParameter* params) {
+void buildParameterList(ListParameter* params) {
     // формирование настроек для выбранного режима игры
     // title, unit, max len, value, lo, hi)
-    params->addIntParameter("Game time", 'm', 3, 10, 1, 998);
-    switch (mode) {
-        case DOMIN:
-            params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
-            break;
-        case DOMIN_PRO:
-            params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
-            params->addStringParameter("Password", 'n', 8, "12345678");
-            break;
-        case BOMB:
-            params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
-            params->addIntParameter("Bomb time", 'm', 3, 5, 1, 997);
-            params->addStringParameter("Password", 'n', 8, "12345678");
-            break;
-        case CTRL_POINT:
-            params->addIntParameter("Repeat time", 's', 3, 5, 5, 999);
-            break;
-    }
+	params->addIntParameter("Game time", 'm', 3, 10, 1, 998);
+	params->addIntParameter("Activated time", 's', 2, 4, 4, 20);
+	params->addStringParameter("Password", 'n', 8, "12345678");
+	params->addIntParameter("Bomb time", 'm', 3, 5, 1, 997);
+	params->addIntParameter("Repeat time", 's', 3, 5, 5, 999);
+
     params->addStringParameter("RED team MAC", 'n', 17, "00:00:00:00:00:00");
-    params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");     params->addStringParameter("LED strip MAC", 'n', 17, "00:00:00:00:00:00")
+    params->addStringParameter("BLUE team MAC", 'n', 17, "00:00:00:00:00:00");
+    params->addStringParameter("LED strip MAC", 'n', 17, "00:00:00:00:00:00");
 }
 
 

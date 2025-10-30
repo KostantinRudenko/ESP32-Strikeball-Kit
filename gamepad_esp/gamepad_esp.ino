@@ -21,6 +21,8 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 #include <JC_Button.h>
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
+#include <TFT_eSPI.h>
+#include "esp_log.h"
 
 #define	IMPLEMENTATION	FIFO
 
@@ -57,42 +59,62 @@ void TaskMain(void *pvParameters) {
                 G_u8DeviceState++;
                 break;
 
-            case ST_GAMEMODE:                                           // выбор режима игры
-                tmp = setGameMode(G_u8GameMode);
-                if (tmp >= 0)
-                {
-                    G_u8GameMode = (modes) tmp;
-                    G_u8DeviceState++;
-                }
-                break;
-
-            case ST_CHECKPARS:                                          // контроль корректности настроек
-                // формирование настроек для выбранного режима игры
-                buildParameterList(G_u8GameMode, &param_list);
-
+            case ST_CHECKPARS:
+                // форматирование всех настроек
+                buildParameterList(&param_list);
                 log_i("buildParameterList OK !");
-
-                // загрузка настроек из Flash
-                if (param_list.load())
-                    G_u8DeviceState = ST_OLDPARS;                           // запрос на игру с параметрами предыдущего сеанса
-                else {
-                    // Если не корректны - установка значений по умолчанию, вывод сообщения
-                    // и переход на редактирование
+                if (!param_list.load()) {
                     showMsg("Incorrect parameters", " Editing required");
                     while (1);
                 }
+
+            case ST_GAMEMODE:                                           // выбор режима игры
+                tmp = setGameMode(G_u8GameMode);
+                if (tmp != EDIT_PARAMS)
+                {
+                    G_u8GameMode = (modes) tmp;
+                    G_u8DeviceState = ST_PARS2PLAY;
+                }
+                else {
+                    G_u8DeviceState = ST_EDIT_PARS;
+                }
+                //break;
+
+                //case ST_CHECKPARS:                                          // контроль корректности настроек
+
+
+                // загрузка настроек из Flash
+                //if (param_list.load())
+                    //G_u8DeviceState = ST_OLDPARS;                           // запрос на игру с параметрами предыдущего сеанса
+                //else {
+                    // Если не корректны - установка значений по умолчанию, вывод сообщения
+                    // и переход на редактирование
+                    //showMsg("Incorrect parameters", " Editing required");
+                    //while (1);
+                //}
                 break;
 
-            case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
+            /*case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
                 tmp = dialogYesNo(" USED OLD SETTINGS? ");
-                if (DLG_NO == tmp)
+                if (DLG_NO == tmp) {
                     G_u8DeviceState = ST_EDIT_PARS;
-                else if (DLG_YES == tmp)
-                    G_u8DeviceState = ST_PARS2PLAY;
-                break;
+                }
+                else if (DLG_YES == tmp) {
+                    G_u8DeviceState = ST_GAMEMODE;
+                }
+                break;*/
 
             case ST_EDIT_PARS:                                          // редактирование параметров
-                G_u8DeviceState += EditParams(&param_list);
+                switch (EditParams(&param_list)) {
+                    case 0:
+                        break;
+                    case 1:
+                        G_u8DeviceState++;
+                        break;
+                    case 2:
+                        G_u8DeviceState = ST_GAMEMODE;
+                        break;
+                }
                 break;
 
             case ST_SAVEPARS:                                           // запрос на сохранение параметров во Flash
@@ -100,7 +122,9 @@ void TaskMain(void *pvParameters) {
                 if (DLG_NONE != tmp)
                 {
                     if (DLG_YES == tmp) param_list.store();
-                    G_u8DeviceState = ST_PARS2PLAY;
+                    /*if (G_u8GameMode == EDIT_PARAMS)*/
+                    G_u8DeviceState = ST_GAMEMODE;
+                    //else G_u8DeviceState = ST_PARS2PLAY;
                 }
                 break;
 
@@ -234,8 +258,8 @@ void TaskWiFi(void *pvParameters) {
     BaseType_t rc;
 
     espnow_event_t evt;
-    bool xLink = LED_OFF;                 // состояние светодиода LINK
-    uint32_t u32LinkLEDTime;
+    //bool xLink = LED_OFF;                 // состояние светодиода LINK
+    //uint32_t u32LinkLEDTime;
     uint32_t u32AckWaitTimer;               // таймер ожидания ответного сообщения
 
     // EventBits_t uxBits;
@@ -329,9 +353,6 @@ void TaskWiFi(void *pvParameters) {
                 break;
 
             case 3:
-                xLink = LED_ON;
-                digitalWrite(LINK_LED_PIN, xLink);
-                u32LinkLEDTime = xTaskGetTickCount();
                 xTaskNotify(hTaskMain, NTF_SEND_FINAL, eSetBits);
                 st = 1;
                 break;
@@ -347,13 +368,6 @@ void TaskWiFi(void *pvParameters) {
             case 5:  // Ошибка подключения WiFi
                 break;
     }
-
-    if (xTaskGetTickCount() - u32LinkLEDTime > 50 && xLink == LED_ON)
-    {
-        xLink = LED_OFF;
-        digitalWrite(LINK_LED_PIN, xLink);
-    }
-
   }
 }
 
@@ -430,8 +444,6 @@ void TaskWiFi(void *pvParameters) {
 
 void setup(void) {
 
-    // Serial.begin(115200);
-
     log_i("Gamepad start.");
 
 // uint32_t sec;
@@ -473,19 +485,20 @@ preferences.begin("my-app", true);
 
 
 
-    pinMode(LINK_LED_PIN, OUTPUT);
-    digitalWrite(LINK_LED_PIN, LED_OFF);
 
-    pinMode(RED_LED_PIN, OUTPUT);
-    digitalWrite(RED_LED_PIN, LED_OFF);
+    //lcd.init();
+    //lcd.backlight();
 
-    pinMode(BLUE_LED_PIN, OUTPUT);
-    digitalWrite(BLUE_LED_PIN, LED_OFF);
+    //TFT_eSPI tft = TFT_eSPI();
 
-    lcd.init();
-    lcd.backlight();
+    //Serial.begin(9600);
+    //Serial.println();
+    tft.init();
+    tft.setRotation(3);
 
-    delay(100);
+    clearScreen();
+
+    ONE_DIGIT_WIDTH = getTextWidth("0", STRING_FONT);
 
     // Allow allocation of all timers
     ESP32PWM::allocateTimer(0);
@@ -502,8 +515,8 @@ preferences.begin("my-app", true);
     // индикация МАС адреса этого устройства
     if (kpd.getKey() != NO_KEY)
     {
-        lcd.setCursor(0,0);
-        lcd.print(WiFi.macAddress());
+        printTFTText(WiFi.macAddress(), 0, 20, true, false, HEADER_FONT);
+        //lcd.print(WiFi.macAddress());
         delay(60000);
     }
 
@@ -512,6 +525,7 @@ preferences.begin("my-app", true);
     blueButton.read();
     redButton.read();
 
+    /*
     byte bar1[8] = {
         B10000,
         B10000,
@@ -568,6 +582,7 @@ preferences.begin("my-app", true);
     lcd.createChar(2, bar3);
     lcd.createChar(3, bar4);
     lcd.createChar(4, bar5);
+    */
 
 
 /*
@@ -600,8 +615,8 @@ preferences.begin("my-app", true);
     if (queue == NULL)
     {
         log_e("Create queue fail");
-        lcd.setCursor(0,0);
-        lcd.print(F("Create queue fail"));
+        printTFTText("Create queue fail", 0, 20, true, false, STRING_FONT);
+        //lcd.print(F("Create queue fail"));
         while (1) {;}
         // return ESP_FAIL;
     }
