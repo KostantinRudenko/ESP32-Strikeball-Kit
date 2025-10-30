@@ -509,7 +509,7 @@ preferences.begin("my-app", true);
         // ESP32PWM::allocateTimer(2);
         // ESP32PWM::allocateTimer(3);
 
-    ledcSetup(BUZZER_PWM_CHANNEL, 1000, 8);
+    // ledcSetup(BUZZER_PWM_CHANNEL, 1000, 8);
     tone(BUZZER_PIN, 10, 50);
     delay(100);
 
