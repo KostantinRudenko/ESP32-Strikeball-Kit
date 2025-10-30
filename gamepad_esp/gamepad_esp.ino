@@ -23,6 +23,7 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
 #include <TFT_eSPI.h>
 #include "esp_log.h"
+#include "esp_task_wdt.h"
 
 #define	IMPLEMENTATION	FIFO
 
@@ -445,6 +446,8 @@ void TaskWiFi(void *pvParameters) {
 void setup(void) {
 
     log_i("Gamepad start.");
+
+    esp_task_wdt_deinit();
 
 // uint32_t sec;
 // int8_t t;
