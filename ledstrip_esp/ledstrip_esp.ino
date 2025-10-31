@@ -2,6 +2,9 @@
 
 #include <WiFi.h>
 #include <esp_now.h>
+#include "esp_log.h"
+#include "esp_task_wdt.h"
+#include "FastLED.h"
 #include "global.h"
 #include "macs.h"
 #include "functions.h"
@@ -217,6 +220,9 @@ void TaskWiFi(void* pvParameters) {
 #pragma endregion WiFi
 
 void setup() {
+    log_i("setup");
+    esp_task_wdt_deinit();
+
     pinMode(LEDSTRIP_PIN, OUTPUT);
 
     G_sThisDeviceMAC = WiFi.macAddress();
