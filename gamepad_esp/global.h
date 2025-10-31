@@ -150,8 +150,6 @@ enum point_states_t {
     PLAYER_NO_INIT,           // плейер не инициализирован
     PLAYER_BUSY,              // играет трек
     PLAYER_READY,             // готов
-    LIGHT_LEDS,
-    LIGHT_LEDS_BY_PROGRESS,
     UNKNOUWN_CMD              // неизвестная команда
 };
 
