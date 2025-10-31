@@ -99,8 +99,8 @@ typedef enum {
 
 const uint8_t PING                   = 1;
 const uint8_t PLAY_TRACK             = 2;
-const uint8_t FILL_STRIP             = 3;
-const uint8_t FILL_STRIP_BY_PROGRESS = 4;
+const uint8_t LIGHT_LEDS             = 3;
+const uint8_t LIGHT_LEDS_BY_PROGRESS = 4;
 const uint8_t CLEAR_STRIP            = 5;
 
 typedef struct {
