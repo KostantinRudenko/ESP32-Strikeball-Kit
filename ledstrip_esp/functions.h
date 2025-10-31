@@ -1,4 +1,3 @@
-#include "FastLED.h"
 //#include "global.h"
 
 #pragma region ______________________________ Constants
