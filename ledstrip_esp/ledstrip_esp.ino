@@ -124,7 +124,6 @@ void TaskMain(void *pvParameters) {
                     // выполнение команды, подготовка ответного сообщения
                     if (parseMessage(&qitem, &outMsg))
                         G_u8MainState++;
-                        G_u8MainState = ST_WAIT_CMD;
                 }
                 break;
 
