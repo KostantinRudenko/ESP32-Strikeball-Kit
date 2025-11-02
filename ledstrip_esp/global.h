@@ -77,8 +77,16 @@ enum Teams {
 };
 
 typedef struct {
-    uint8_t cmd;
-    uint8_t data[2];
+    uint8_t cmd;     // каманда
+    uint8_t data[3]; // data[0] - номер peer: (0 - red; 1 - blue; 2 - ledStrip; 255 - broadcast;)
+                     // data[1] - цвет команды
+                     // data[2] - прогресс заполнения ленты(опционально, только для команды CMD_FillStripByProgress)
 } msg_esp_now_t;
+
+typedef struct {
+    uint8_t id_cb;          // callback-функция, поместившая сообщение в очередь
+    uint8_t status;         // состояние
+    espnow_msg_t msg;       // сообщение
+} espnow_event_t;
 
 #pragma endregion Structures
