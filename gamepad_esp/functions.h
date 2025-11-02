@@ -111,7 +111,7 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 
 		if (*progress % 10 == 0) {
 			espnow_msg_t msg;
-			msg.cmd = LIGHT_STRIP;
+			msg.cmd = LIGHT_LEDS_BY_PROGRESS;
 			msg.data[0] = G_u8Team;
 			msg.data[2] = *progress;
 			if (!q_out_msg.push(&msg))
