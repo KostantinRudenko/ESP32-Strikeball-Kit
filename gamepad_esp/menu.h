@@ -654,6 +654,7 @@ bool pressAnyKey() {
             printTFTText("Press # to start", NO_X, STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             printTFTText(" RED:", PADDING, HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             printTFTText(" BLUE:", PADDING, HEADER_SPACE_H+STRING_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            printTFTText(" LED:", PADDING, HEADER_SPACE_H+STRING_SPACE_H*3, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             start = false;
             st++;
@@ -713,10 +714,20 @@ bool pressAnyKey() {
     if (st > 1) {
         key = kpd.getKey();
         if (key == '#' && !start) {
-			if (G_arPeerStatus[0] == PEER_NO_CONNECT)
-				printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-			if (G_arPeerStatus[1] == PEER_NO_CONNECT)
-				printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*2+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			for (uint8_t i = 0; i < MAX_POINTS; i++) {
+          		log_d("i = %d", i);
+				if (G_arPeerStatus[i] == PEER_NO_CONNECT)
+					printTFTText("is not connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*(i+1)+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+				else
+					printTFTText("connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*(i+1)+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			}
+
+			// if (G_arPeerStatus[0] == PEER_NO_CONNECT)
+			// 	printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			// if (G_arPeerStatus[1] == PEER_NO_CONNECT)
+			// 	printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*2+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			// if (G_arPeerStatus[2] == PEER_NO_CONNECT)
+			// 	printTFTText("led isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*3+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
 			tm = xTaskGetTickCount();
 			for (;;) {
