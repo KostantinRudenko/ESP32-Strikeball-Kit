@@ -323,7 +323,7 @@ void TaskWiFi(void *pvParameters) {
                     switch (evt.id_cb) {
                         case ESPNOW_SEND_CB:
                             if (evt.status == ESP_NOW_SEND_SUCCESS) {
-                                log_i("ESP_NOW_SEND_SUCCESS");
+                                log_i("ESP_NOW_SEND_SUCCESS to peer %d", evt.msg.data[0]);
                                 send_evt.status |= MSG_SEND_OK;
                                 // if (evt.msg.cmd == PING)
                                 if (send_evt.msg.cmd == PING)
@@ -333,7 +333,7 @@ void TaskWiFi(void *pvParameters) {
                                     st++;
                             }
                             else {
-                                log_i("ESP_NOW SEND FAIL");
+                                log_i("ESP_NOW SEND FAIL to peer %d", send_evt.msg.data[0]);
                                 xTaskNotify(hTaskMain, NTF_SEND_FINAL, eSetBits);
                                 st = 1;
                             }
