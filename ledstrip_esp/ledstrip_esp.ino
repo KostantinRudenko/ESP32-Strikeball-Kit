@@ -88,6 +88,16 @@ static TaskHandle_t hTaskMain;
 
 #pragma endregion Variables
 
+#pragma region ________________________________ Functions
+
+void initLedStrip() {
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, LEDS_NUM);
+  FastLED.setBrightness(BRIGHTNESS);
+  fill_solid(leds, NUM_LEDS, LED_OFF); 
+}
+
+#pragma endregion Functions
+
 
 #pragma region ________________________________ Main_task
 
@@ -284,6 +294,10 @@ void setup() {
     log_i("Base start.");
     
     esp_task_wdt_deinit();
+
+    initLedStrip();
+
+    log_i("Inited led Strip");
 
     G_sThisDeviceMAC = WiFi.macAddress();
     MacStringToByteArray(G_sThisDeviceMAC, G_aru8ThisDeviceMAC);
