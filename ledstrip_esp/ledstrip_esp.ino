@@ -3,9 +3,7 @@
 
 #pragma region ________________________________ Constants
 
-const String Gc_sGamepadMAC = "B0:A7:32:2A:BA:10";                // MAC адрес игрового пульта в формате строки "12:34:56:78:9A:BC"
-
-const uint16_t Gc_u16BusyCheckDelayMS = 400;                      // Задержка опроса состояния пина Busy плейера
+const String Gc_sGamepadMAC = "80:F3:DA:61:AC:70";                // MAC адрес игрового пульта в формате строки "12:34:56:78:9A:BC"
 
 const uint8_t LED_STRIP_PIN       = 15;                           // управляющий пин светодиодной ленты
 const uint8_t SIREN_PIN           = 17;                           // управляющий пин сирены(идет на реле)
