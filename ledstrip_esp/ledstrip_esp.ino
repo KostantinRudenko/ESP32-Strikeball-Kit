@@ -22,6 +22,7 @@ const uint8_t NTF_SEND_FAIL_WIFI  = 0b00001000;
 #include <esp_now.h>
 #include "esp_log.h"
 #include "esp_task_wdt.h"
+#include "FastLED.h"
 #include "macs.h"
 
 #pragma endregion Includes
