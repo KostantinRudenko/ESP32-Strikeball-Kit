@@ -22,16 +22,20 @@ const uint8_t NTF_RECV_WIFI       = 0b00000010;
 const uint8_t NTF_SEND_OK_WIFI    = 0b00000100;
 const uint8_t NTF_SEND_FAIL_WIFI  = 0b00001000;
 
-#define LED_PIN     15 
-#define LEDS_NUM    10
-#define BRIGHTNESS  50
-#define LED_TYPE    WS2812B
-#define COLOR_ORDER GRB
+#define LED_PIN      15 
+#define LEDS_NUM     10
+#define BRIGHTNESS   50
+#define LED_TYPE     WS2812B
+#define COLOR_ORDER  GRB
 
-#define LED_OFF     CRGB(0,0,0)
-#define WHITE_RGB   CRGB(255,255,255)
-#define RED_RGB     CRGB(255,0,0)
-#define BLUE_RGB    CRGB(0,0,255)
+#define MAX_PROGRESS 100
+
+#define LED_OFF      CRGB(0,0,0)
+#define WHITE_RGB    CRGB(255,255,255)
+#define RED_RGB      CRGB(255,0,0)
+#define BLUE_RGB     CRGB(0,0,255)
+
+#define NOT_CLEAR    false
 
 #pragma endregion Constants
 
@@ -94,6 +98,20 @@ void initLedStrip() {
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, LEDS_NUM);
   FastLED.setBrightness(BRIGHTNESS);
   fill_solid(leds, LEDS_NUM, LED_OFF); 
+}
+
+void lightLeds(uint16_t amount, CRGB color, bool isClear=true) {
+  if (isClear)
+    fill_solid(leds, LEDS_NUM, LED_OFF);
+  fill_solid(leds, amount, color);
+}
+
+void lightLedsByProgress(uint8_t progress, CRGB color, bool isClear=true) {
+  if (isClear)
+    fill_solid(leds, LEDS_NUM, LED_OFF);
+  fill_solid(leds,
+             map(progress, 0, MAX_PROGRESS, 0, LEDS_NUM),
+             color);
 }
 
 #pragma endregion Functions
