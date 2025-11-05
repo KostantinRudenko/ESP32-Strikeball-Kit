@@ -78,7 +78,7 @@ QueueHandle_t queue_in;                                           // очере�
 uint8_t G_u8MainState = ST_INIT;                                  // Состояние главной задачи
 uint8_t G_u8WiFiState = 0;                                        // Состояние задачи WiFi
 
-CRGB leds[NUM_LEDS];
+CRGB leds[LEDS_NUM];
 bool isLedInitialized = false;
 
 msg_esp_now_t outMsg;
@@ -93,7 +93,7 @@ static TaskHandle_t hTaskMain;
 void initLedStrip() {
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, LEDS_NUM);
   FastLED.setBrightness(BRIGHTNESS);
-  fill_solid(leds, NUM_LEDS, LED_OFF); 
+  fill_solid(leds, LEDS_NUM, LED_OFF); 
 }
 
 #pragma endregion Functions
@@ -296,6 +296,7 @@ void setup() {
     esp_task_wdt_deinit();
 
     initLedStrip();
+    isLedInitialized = true;
 
     log_i("Inited led Strip");
 
