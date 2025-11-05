@@ -69,6 +69,7 @@ QueueHandle_t queue_in;                                           // очере�
 
 uint8_t G_u8MainState = ST_INIT;                                  // Состояние главной задачи
 uint8_t G_u8WiFiState = 0;                                        // Состояние задачи WiFi
+bool isLedInitialized = false;
 
 msg_esp_now_t outMsg;
 
@@ -125,8 +126,8 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
     if (rec_msg->cmd == Ping) {
         ack_msg->cmd = rec_msg->cmd;
         ack_msg->data[0] = rec_msg->data[0];
-        ack_msg->data[1] = 3;//G_xAudioConnected ? digitalRead(PLAYER_BUSY_PIN) + PLAYER_BUSY : PLAYER_NO_INIT;
-                             //тут надо заменить на что либо разумное
+        ack_msg->data[1] = isLedInitialized ? DEVICE_READY : DEVICE_NO_INIT;
+
         log_i("Состояние = %d", ack_msg->data[1]);
         return true;    
     }
