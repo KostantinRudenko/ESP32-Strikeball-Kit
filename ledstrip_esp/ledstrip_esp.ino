@@ -1,5 +1,14 @@
 
+#pragma region ________________________________ Includes
 
+#include <WiFi.h>
+#include <esp_now.h>
+#include "esp_log.h"
+#include "esp_task_wdt.h"
+#include "FastLED.h"
+#include "macs.h"
+
+#pragma endregion Includes
 
 #pragma region ________________________________ Constants
 
@@ -13,20 +22,18 @@ const uint8_t NTF_RECV_WIFI       = 0b00000010;
 const uint8_t NTF_SEND_OK_WIFI    = 0b00000100;
 const uint8_t NTF_SEND_FAIL_WIFI  = 0b00001000;
 
+#define LED_PIN     15 
+#define LEDS_NUM    10
+#define BRIGHTNESS  50
+#define LED_TYPE    WS2812B
+#define COLOR_ORDER GRB
+
+#define LED_OFF     CRGB(0,0,0)
+#define WHITE_RGB   CRGB(255,255,255)
+#define RED_RGB     CRGB(255,0,0)
+#define BLUE_RGB    CRGB(0,0,255)
+
 #pragma endregion Constants
-
-
-#pragma region ________________________________ Includes
-
-#include <WiFi.h>
-#include <esp_now.h>
-#include "esp_log.h"
-#include "esp_task_wdt.h"
-#include "FastLED.h"
-#include "macs.h"
-
-#pragma endregion Includes
-
 
 #pragma region ________________________________ Variables
 
@@ -70,6 +77,8 @@ QueueHandle_t queue_in;                                           // очере�
 
 uint8_t G_u8MainState = ST_INIT;                                  // Состояние главной задачи
 uint8_t G_u8WiFiState = 0;                                        // Состояние задачи WiFi
+
+CRGB leds[NUM_LEDS];
 bool isLedInitialized = false;
 
 msg_esp_now_t outMsg;
