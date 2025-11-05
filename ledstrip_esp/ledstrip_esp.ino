@@ -43,20 +43,21 @@ enum task_wifi_states_t {
 
 enum Commands {
   Ping = 1,                 // сканирование
-  PlayTrack                 // проиграть трек
+  LightLeds = 3,
+  LightLedsByProgress
 };
 
 enum base_states_t {
   PEER_NO_CONNECT = 0,      // точка не подключена
-  PLAYER_NO_INIT,           // плейер не инициализирован
-  PLAYER_BUSY,              // играет трек
-  PLAYER_READY,             // готов
+  DEVICE_NO_INIT,           // не инициализирован
+  DEVICE_BUSY,              // занят другой командой
+  DEVICE_READY,             // готов
   UNKNOUWN_CMD              // неизвестная команда
 };
 
 typedef struct msg_esp_now_t {
   uint8_t cmd;
-  uint8_t data[2]; 
+  uint8_t data[3]; 
 } msg_esp_now_t;
 
 String G_sThisDeviceMAC;                                          // MAC адрес этого устройства в формате строки "12:34:56:78:9A:BC"
