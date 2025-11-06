@@ -121,6 +121,16 @@ void lightLedsByProgress(uint8_t progress, CRGB color, bool isClear=true) {
   FastLED.show();
 }
 
+void useLedStrip(msg_esp_now_t* msg) {
+  switch (msg->cmd) {
+    case LightLeds:
+      log_i("Light leds command");
+      lightLeds(LEDS_NUM, msg->data[1]);
+    case LightLedsByProgress:
+      log_i("Light leds by progress command");
+      lightLedsByProgress(msg->data[2], msg->data[1] == 0 ? RED_RGB : BLUE_RGB);
+  }
+}
 #pragma endregion Functions
 
 
@@ -177,8 +187,8 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
         return true;    
     }
 
-    // playTrack(rec_msg->data[1], true);
-    // тут надо вызывать ф-ю работы с лентой
+    useLedStrip(rec_msg);
+    log_i("Used led");
     return false; 
 }
 
