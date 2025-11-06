@@ -112,7 +112,8 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 		if (*progress % 10 == 0) {
 			espnow_msg_t msg;
 			msg.cmd = LIGHT_LEDS_BY_PROGRESS;
-			msg.data[0] = G_u8Team;
+			msg.data[0] = 2;
+      msg.data[1] = G_u8Team;
 			msg.data[2] = *progress;
 			if (!q_out_msg.push(&msg))
 				log_e("Error: q_out_msg is full");
@@ -126,6 +127,14 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 		if (*progress >= MAX_PROGRESS) {
 			clearSpace(0, PROGRESS_BAR_Y_POSITION, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
 			*progress = MAX_PROGRESS;
+
+      msg.cmd = LIGHT_LEDS_BY_PROGRESS;
+			msg.data[0] = 2;
+      msg.data[1] = G_u8Team;
+			msg.data[2] = *progress;
+			if (!q_out_msg.push(&msg))
+				log_e("Error: q_out_msg is full");
+        
 			return MAX_PROGRESS;
 		}
     }
