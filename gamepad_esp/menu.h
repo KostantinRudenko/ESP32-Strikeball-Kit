@@ -711,19 +711,6 @@ bool pressAnyKey() {
     if (st > 1) {
         key = kpd.getKey();
         if (key == '#' && !start) {
-			for (uint8_t i = 0; i < MAX_POINTS; i++) {
-          		log_d("i = %d", i);
-				if (G_arPeerStatus[i] == PEER_NO_CONNECT)
-					printTFTText("is not connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*(i+1)+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-				else
-					printTFTText("connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*(i+1)+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-			}
-
-			tm = xTaskGetTickCount();
-			for (;;) {
-				if (xTaskGetTickCount() - tm > 3000)
-					break;
-			}
 
             tone(BUZZER_PIN, BUZZER_BUTTON, BUZZER_DURATION);
             start = true;

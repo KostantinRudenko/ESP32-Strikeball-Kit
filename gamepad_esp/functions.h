@@ -4,6 +4,7 @@
 #include "global.h"
 #include "getTimeHMS.h"
 #include <csignal>
+#include <cstdint>
 
 #pragma region ________________________________ Constants
 
@@ -102,13 +103,13 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
         clearSpace(0, PADDING, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE, TFT_BLACK);
     }
 
+	espnow_msg_t msg;
     uint32_t var = (xTaskGetTickCount() - *time);
     uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, DISPLAY_WIDTH);
 
     while (*progress < new_progress && *progress < MAX_PROGRESS) {
 
 		if (*progress % 10 == 0) {
-			espnow_msg_t msg;
 			msg.cmd = LIGHT_LEDS_BY_PROGRESS;
 			msg.data[0] = 2;
       msg.data[1] = G_u8Team;
@@ -144,6 +145,7 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 
 void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
     if (send_event->msg.cmd == PING) {
+		static uint32_t tm = 0;
         uint8_t point = send_event->msg.data[0];
         G_arPeerStatus[point] = PEER_NO_CONNECT;        // Упреждающая установка. При успешном приеме будет перезаписана
         if (send_event->status & MSG_RECV_OK) {
@@ -152,7 +154,12 @@ void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
                 G_arPeerStatus[point] = recv_msg->data[1];      // если сообщение принято
         }
         // отрисовка состояния точки
-        printTFTText(sPointNameStates[G_arPeerStatus[point]], NO_X, HEADER_SPACE_H*point, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+		if (xTaskGetTickCount() - tm > 3000) {
+			printTFTText(sPointNameStates[G_arPeerStatus[point]],
+						 NO_X, HEADER_SPACE_H+STRING_SPACE_H*(point+1),
+						 CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			tm = xTaskGetTickCount();
+		}
     }
 }
 

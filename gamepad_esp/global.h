@@ -157,9 +157,9 @@ const char *sPointNameStates[5]  = {
   //01234567890123456789
   //BLUE:
          "Disconnect    ",
-         "Player bad    ",
-         "Player busy   ",
-         "Player ready  ",
+         "Device bad    ",
+         "Device busy   ",
+         "Device ready  ",
          "Bad command   "
 };
 
