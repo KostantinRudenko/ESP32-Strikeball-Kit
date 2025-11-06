@@ -97,21 +97,28 @@ static TaskHandle_t hTaskMain;
 void initLedStrip() {
   FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, LEDS_NUM);
   FastLED.setBrightness(BRIGHTNESS);
-  fill_solid(leds, LEDS_NUM, LED_OFF); 
+  fill_solid(leds, LEDS_NUM, LED_OFF);
+  FastLED.show();
 }
 
 void lightLeds(uint16_t amount, CRGB color, bool isClear=true) {
-  if (isClear)
+  if (isClear) {
     fill_solid(leds, LEDS_NUM, LED_OFF);
+    FastLED.show();
+    }
   fill_solid(leds, amount, color);
+  FastLED.show();
 }
 
 void lightLedsByProgress(uint8_t progress, CRGB color, bool isClear=true) {
-  if (isClear)
+  if (isClear) {
     fill_solid(leds, LEDS_NUM, LED_OFF);
+    FastLED.show();
+    }
   fill_solid(leds,
              map(progress, 0, MAX_PROGRESS, 0, LEDS_NUM),
              color);
+  FastLED.show();
 }
 
 #pragma endregion Functions
