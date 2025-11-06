@@ -125,7 +125,7 @@ void useLedStrip(msg_esp_now_t* msg) {
       log_i("Light leds command");
       lightLeds(LEDS_NUM, msg->data[1]);
     case LightLedsByProgress:
-      log_i("Light leds by progress command: progress - %d, team - %d", msg->data[2], msg->data[1] == 0 ? RED_RGB : BLUE_RGB);
+      log_i("Light leds by progress command: progress - %d, team - %d", msg->data[2], msg->data[1] == 0 ? "NOONE" : (msg->data[1] == 1 ? "RED" : "BLUE");
       lightLedsByProgress(msg->data[2], msg->data[1] == 0 ? RED_RGB : BLUE_RGB);
   }
 }
