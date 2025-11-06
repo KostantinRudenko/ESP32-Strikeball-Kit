@@ -489,13 +489,6 @@ preferences.begin("my-app", true);
 
 
 
-    //lcd.init();
-    //lcd.backlight();
-
-    //TFT_eSPI tft = TFT_eSPI();
-
-    //Serial.begin(9600);
-    //Serial.println();
     tft.init();
     tft.setRotation(3);
 
@@ -527,65 +520,6 @@ preferences.begin("my-app", true);
     redButton.begin();
     blueButton.read();
     redButton.read();
-
-    /*
-    byte bar1[8] = {
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-    };
-    byte bar2[8] = {
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-    };
-    byte bar3[8] = {
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-    };
-    byte bar4[8] = {
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-    };
-    byte bar5[8] = {
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-    };
-
-    lcd.createChar(0, bar1);
-    lcd.createChar(1, bar2);
-    lcd.createChar(2, bar3);
-    lcd.createChar(3, bar4);
-    lcd.createChar(4, bar5);
-    */
 
 
 /*
@@ -619,7 +553,6 @@ preferences.begin("my-app", true);
     {
         log_e("Create queue fail");
         printTFTText("Create queue fail", 0, 20, true, false, STRING_FONT);
-        //lcd.print(F("Create queue fail"));
         while (1) {;}
         // return ESP_FAIL;
     }

@@ -7,7 +7,6 @@
 
 #pragma region ________________________________ Constants
 
-//const int16_t LCD_H_DOTS = 100;                // число точек LCD по горизонтали  = число точек на символ * число символов (5*20=100)
 const char *team_names[3] = {
     "    ",
     " RED",
@@ -53,7 +52,6 @@ void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool Cent
 uint16_t getTextWidth(String s, const GFXfont *font) {
 	tft.setFreeFont(font);
 	uint16_t width = tft.textWidth(s);
-	//tft.unloadFont();
 	return width;
 }
 
@@ -154,8 +152,6 @@ void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
                 G_arPeerStatus[point] = recv_msg->data[1];      // если сообщение принято
         }
         // отрисовка состояния точки
-        //lcd.setCursor(6, 2 + point);
-        //lcd.print(sPointNameStates[G_arPeerStatus[point]]);
         printTFTText(sPointNameStates[G_arPeerStatus[point]], NO_X, HEADER_SPACE_H*point, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
     }
 }
@@ -186,7 +182,6 @@ bool sendESP_NOW() {
 }
 
 void RenderStaticView() {
-	//clearSpace(0, 0, DISPLAY_WIDTH, PADDING+HEADER_SPACE_H, TFT_BLACK);
     switch (G_u8GameMode) {
         case DOMIN:
 			printTFTText("DOMINATION", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
@@ -232,7 +227,6 @@ void RenderStaticView() {
             else
 				printTFTText("CONTROL POINT", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 			printTFTText("Game time: "+(String)getTimeHMS(game_timer.Secs()), PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-            //printTFTText(String(getTimeHMS(game_timer.Secs())), getTextWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             break;
     }
 }

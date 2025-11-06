@@ -594,13 +594,10 @@ uint8_t dialogYesNo(String question) {
 
 
 void showMsg(String line1, String line2, uint32_t tm = 2000) {
-  //lcd.clear();
   clearScreen();
-  //lcd.print(line1);
+
   printTFTText("Message", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
   printTFTText(line1, NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-  //lcd.setCursor(0, 2);
-  //lcd.print(line2);
   printTFTText(line2, NO_X, HEADER_SPACE_H+STRING_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
   vTaskDelay(pdMS_TO_TICKS(tm));
 }
@@ -722,13 +719,6 @@ bool pressAnyKey() {
 					printTFTText("connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*(i+1)+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 			}
 
-			// if (G_arPeerStatus[0] == PEER_NO_CONNECT)
-			// 	printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-			// if (G_arPeerStatus[1] == PEER_NO_CONNECT)
-			// 	printTFTText("speaker isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*2+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-			// if (G_arPeerStatus[2] == PEER_NO_CONNECT)
-			// 	printTFTText("led isn't connected", PADDING+speakerStatusLabelPosition, STRING_SPACE_H*3+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-
 			tm = xTaskGetTickCount();
 			for (;;) {
 				if (xTaskGetTickCount() - tm > 3000)
@@ -772,12 +762,10 @@ bool delayForStart() {
             game_timer.Tick();
             if (!game_timer.GetTime()) {                // Если таймер отработал
                 game_timer.Stop();
-				//printTFTText("00", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 st++;
             }
             else if (game_timer.Secs() != secs) {
                 secs = game_timer.Secs();
-				//clearSpace(PADDING, DISPLAY_HEIGHT/2, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
 				printTFTText(" "+(String)(secs < 10 ? "0"+(String)secs : secs)+" ", NO_X, DISPLAY_HEIGHT/2, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
