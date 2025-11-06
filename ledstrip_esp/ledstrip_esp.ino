@@ -104,7 +104,6 @@ void initLedStrip() {
 void lightLeds(uint16_t amount, CRGB color, bool isClear=true) {
   if (isClear) {
     fill_solid(leds, LEDS_NUM, LED_OFF);
-    FastLED.show();
     }
   fill_solid(leds, amount, color);
   FastLED.show();
@@ -113,7 +112,6 @@ void lightLeds(uint16_t amount, CRGB color, bool isClear=true) {
 void lightLedsByProgress(uint8_t progress, CRGB color, bool isClear=true) {
   if (isClear) {
     fill_solid(leds, LEDS_NUM, LED_OFF);
-    FastLED.show();
     }
   fill_solid(leds,
              map(progress, 0, MAX_PROGRESS, 0, LEDS_NUM),
@@ -127,7 +125,7 @@ void useLedStrip(msg_esp_now_t* msg) {
       log_i("Light leds command");
       lightLeds(LEDS_NUM, msg->data[1]);
     case LightLedsByProgress:
-      log_i("Light leds by progress command");
+      log_i("Light leds by progress command: progress - %d, team - %d", msg->data[2], msg->data[1] == 0 ? RED_RGB : BLUE_RGB);
       lightLedsByProgress(msg->data[2], msg->data[1] == 0 ? RED_RGB : BLUE_RGB);
   }
 }
@@ -188,7 +186,6 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
     }
 
     useLedStrip(rec_msg);
-    log_i("Used led");
     return false; 
 }
 
