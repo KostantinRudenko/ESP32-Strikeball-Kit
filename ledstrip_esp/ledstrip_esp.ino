@@ -83,15 +83,21 @@ QueueHandle_t queue_in;                                           // очере�
 uint8_t G_u8MainState = ST_INIT;                                  // Состояние главной задачи
 uint8_t G_u8WiFiState = 0;                                        // Состояние задачи WiFi
 
-CRGB leds[LEDS_NUM];
-bool isLedInitialized = false;
-
 msg_esp_now_t outMsg;
 
 static TaskHandle_t hTaskWiFi;
 static TaskHandle_t hTaskMain;
 
 #pragma endregion Variables
+
+#pragma region ________________________________ LedVariables
+
+CRGB leds[LEDS_NUM];
+bool isLedInitialized = false;
+
+uint8_t ledState = WaitingForCmd;
+
+#pragma endregion LedVariables
 
 #pragma region ________________________________ Functions
 
