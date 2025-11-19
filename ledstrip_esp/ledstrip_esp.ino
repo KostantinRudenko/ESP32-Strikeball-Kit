@@ -55,8 +55,9 @@ enum task_wifi_states_t {
 
 enum Commands {
   Ping = 1,                 // сканирование
-  LightLeds = 3,
-  LightLedsByProgress
+  WaitingForCmd = 3,
+  Arming,
+  Disarming
 };
 
 enum base_states_t {
