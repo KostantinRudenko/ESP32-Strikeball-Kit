@@ -122,22 +122,47 @@ void initLedStrip() {
   FastLED.show();
 }
 
-void lightLeds(uint16_t amount, CRGB color, bool isClear=true) {
-  if (isClear) {
-    fill_solid(leds, LEDS_NUM, LED_OFF);
-    }
-  fill_solid(leds, amount, color);
+void clearStrip() {
+  fill_solid(leds, LEDS_NUM, LED_OFF);
+}
+
+void lightFlame(uint16_t ledNum) {
+  if (ledNum >= LEDS_NUM) ledNum = LEDS_NUM - 1; // защита
+
+  CRGB baseColor;
+  if      (curTeam == RED_TEAM)  baseColor = RED_RGB;
+  else if (curTeam == BLUE_TEAM) baseColor = BLUE_RGB;
+  else                           baseColor = NOONE_RGB;
+
+  clearStrip();
+
+  leds[ledNum] = baseColor;
+
+  for (int i = 1; i <= LED_GRADIENT; ++i) {
+    int16_t left  = (int16_t)ledNum - i;
+    int16_t right = (int16_t)ledNum + i;
+
+    int16_t scale = (int16_t)(255.0 * (1.0 - LED_COFF * i));
+    if (scale < 0) scale = 0;
+    if (scale > 255) scale = 255;
+
+    CRGB faded = baseColor;
+    faded.nscale8((uint8_t)scale);
+
+    if (left >= 0 && left < LEDS_NUM)  leds[left]  = faded;
+    if (right >= 0 && right < LEDS_NUM) leds[right] = faded;
+  }
+
   FastLED.show();
 }
 
-void lightLedsByProgress(uint8_t progress, CRGB color, bool isClear=true) {
-  if (isClear) {
-    fill_solid(leds, LEDS_NUM, LED_OFF);
-    }
-  fill_solid(leds,
-             map(progress, 0, MAX_PROGRESS, 0, LEDS_NUM),
-             color);
-  FastLED.show();
+void waiting() {
+  if (curLedPosition <= 0) dir = +1;
+  else if (curLedPosition >= LEDS_NUM-1) dir = -1;
+
+  curLedPosition += dir;
+  clearStrip();
+  lightFlame(curLedPosition);
 }
 
 void useLedStrip() {
