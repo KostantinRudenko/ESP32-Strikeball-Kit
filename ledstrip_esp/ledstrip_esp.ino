@@ -120,14 +120,14 @@ void lightLedsByProgress(uint8_t progress, CRGB color, bool isClear=true) {
   FastLED.show();
 }
 
-void useLedStrip(msg_esp_now_t* msg) {
-  switch (msg->cmd) {
-    case LightLeds:
-      log_i("Light leds command");
-      lightLeds(LEDS_NUM, msg->data[1]);
-    case LightLedsByProgress:
-      log_i("Light leds by progress command: progress - %d, team - %d", msg->data[2], msg->data[1] == 0 ? "NOONE" : (msg->data[1] == 1 ? "RED" : "BLUE");
-      lightLedsByProgress(msg->data[2], msg->data[1] == 0 ? RED_RGB : BLUE_RGB);
+void useLedStrip() {
+  switch (ledState) {
+    case WaitingForCmd:
+      log_i("Waiting");
+    case Arming:
+      log_i("Arming");
+    case Disarming:
+      log_i("Disarming");
   }
 }
 #pragma endregion Functions
@@ -186,7 +186,7 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
         return true;    
     }
 
-    useLedStrip(rec_msg);
+    useLedStrip();
     return false; 
 }
 
