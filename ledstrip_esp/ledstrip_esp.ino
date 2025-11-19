@@ -31,9 +31,12 @@ const uint8_t NTF_SEND_FAIL_WIFI  = 0b00001000;
 #define MAX_PROGRESS 100
 
 #define LED_OFF      CRGB(0,0,0)
-#define WHITE_RGB    CRGB(255,255,255)
+#define NOONE_RGB    CRGB(128,128,0)
 #define RED_RGB      CRGB(255,0,0)
 #define BLUE_RGB     CRGB(0,0,255)
+
+#define LED_COFF     0.3
+#define LED_GRADIENT 2
 
 #define NOT_CLEAR    false
 
@@ -58,6 +61,12 @@ enum Commands {
   WaitingForCmd = 3,
   Arming,
   Disarming
+};
+
+enum Teams {
+  NOONE = 0,
+  RED_TEAM,
+  BLUE_TEAM
 };
 
 enum base_states_t {
@@ -95,7 +104,12 @@ static TaskHandle_t hTaskMain;
 CRGB leds[LEDS_NUM];
 bool isLedInitialized = false;
 
+uint8_t curTeam = NOONE;
 uint8_t ledState = WaitingForCmd;
+uint16_t curLedPosition = 0; // использовать только для Waiting
+
+bool isGoingBack = false;
+int8_t dir = 1; // направление движения
 
 #pragma endregion LedVariables
 
