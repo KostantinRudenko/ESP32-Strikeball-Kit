@@ -109,14 +109,14 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 
     while (*progress < new_progress && *progress < MAX_PROGRESS) {
 
-		if (*progress % 10 == 0) {
-			msg.cmd = LIGHT_LEDS_BY_PROGRESS;
-			msg.data[0] = 2;
-      msg.data[1] = G_u8Team;
-			msg.data[2] = *progress;
-			if (!q_out_msg.push(&msg))
-				log_e("Error: q_out_msg is full");
-		}
+		// if (*progress % 10 == 0) {
+			// msg.cmd = LIGHT_LEDS_BY_PROGRESS;
+			// msg.data[0] = 2;
+      		// msg.data[1] = G_u8Team;
+			// msg.data[2] = *progress;
+			// if (!q_out_msg.push(&msg))
+			// 	log_e("Error: q_out_msg is full");
+		// }
 
 		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, map(*progress, 0, MAX_PROGRESS, 0, PROGRESS_BAR_WIDTH), PROGRESS_BAR_HEIGHT, TFT_WHITE);
         tone(BUZZER_PIN, *progress * 25);
@@ -127,12 +127,12 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 			clearSpace(0, PROGRESS_BAR_Y_POSITION, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
 			*progress = MAX_PROGRESS;
 
-      msg.cmd = LIGHT_LEDS_BY_PROGRESS;
-			msg.data[0] = 2;
-      msg.data[1] = G_u8Team;
-			msg.data[2] = *progress;
-			if (!q_out_msg.push(&msg))
-				log_e("Error: q_out_msg is full");
+      		// msg.cmd = LIGHT_LEDS_BY_PROGRESS;
+			// msg.data[0] = 2;
+      		// msg.data[1] = G_u8Team;
+			// msg.data[2] = *progress;
+			// if (!q_out_msg.push(&msg))
+				// log_e("Error: q_out_msg is full");
         
 			return MAX_PROGRESS;
 		}
