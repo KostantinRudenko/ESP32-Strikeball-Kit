@@ -345,6 +345,7 @@ bool Domination(ListParameter* params, team_t* winner) {
 
     static int8_t i8CheckTimeCount;
     espnow_msg_t outMsg;
+    espnow_msg_t ledMsg;
 
     redButton.read();
     blueButton.read();
@@ -361,6 +362,12 @@ bool Domination(ListParameter* params, team_t* winner) {
             secs = game_timer.Secs();
 
             i8CheckTimeCount = getTimeMarker(secs);
+
+			ledMsg.cmd = WAITING;
+			ledMsg.data[0] = 2;
+			ledMsg.data[1] = G_u8Team;
+			if (!q_out_msg.push(&ledMsg))
+				log_e("Error: q_out_msg is full");
 
 			printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 			printTFTText(team_names[RED], PADDING, PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
