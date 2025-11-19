@@ -331,6 +331,10 @@ void setup() {
     initLedStrip();
     isLedInitialized = true;
 
+    fill_solid(leds, LEDS_NUM, LED_OFF);
+    
+    FastLED.show();
+
     log_i("Inited led Strip");
 
     G_sThisDeviceMAC = WiFi.macAddress();
