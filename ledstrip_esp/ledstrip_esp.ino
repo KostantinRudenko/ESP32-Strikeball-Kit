@@ -168,11 +168,16 @@ void waiting() {
 void useLedStrip() {
   switch (ledState) {
     case WaitingForCmd:
-      log_i("Waiting");
+      if (xTaskGetTickCount() - tm > 50) {
+        waiting();
+        tm = xTaskGetTickCount();
+      }
+      break;
+      
     case Arming:
-      log_i("Arming");
+      break;
     case Disarming:
-      log_i("Disarming");
+      break;
   }
 }
 #pragma endregion Functions
