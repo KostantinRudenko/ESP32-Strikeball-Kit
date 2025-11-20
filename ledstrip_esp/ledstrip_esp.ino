@@ -60,7 +60,9 @@ enum Commands {
   Ping = 1,                 // сканирование
   WaitingForCmd = 3,
   Arming,
-  Disarming
+  Disarming,
+  PointArmed,
+  StopLed
 };
 
 enum Teams {
@@ -110,6 +112,8 @@ uint16_t curLedPosition = 0; // использовать только для Wai
 
 bool isGoingBack = false;
 int8_t dir = 1; // направление движения
+
+uint32_t tm = 0;
 
 #pragma endregion LedVariables
 
