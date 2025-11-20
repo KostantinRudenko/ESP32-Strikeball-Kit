@@ -102,8 +102,7 @@ const uint8_t PLAY_TRACK             = 2;
 const uint8_t WAITING                = 3;
 const uint8_t START_ARMING           = 4;
 const uint8_t START_DISARMING        = 5;
-const uint8_t STOP_ARMING            = 6;
-const uint8_t CLEAR_STRIP            = 7;
+const uint8_t POINT_ARMED            = 6;
 
 typedef struct {
     uint8_t cmd;            // команда
