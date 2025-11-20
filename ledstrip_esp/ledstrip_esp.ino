@@ -114,6 +114,10 @@ bool isGoingBack = false;
 int8_t dir = 1; // направление движения
 
 uint32_t tm = 0;
+uint32_t armingTimeCounter;
+
+bool isInProcess = false; // для arming/disarming
+uint16_t armingTime = 5000; // Время на arming/disarming
 
 #pragma endregion LedVariables
 
@@ -124,6 +128,12 @@ void initLedStrip() {
   FastLED.setBrightness(BRIGHTNESS);
   fill_solid(leds, LEDS_NUM, LED_OFF);
   FastLED.show();
+}
+
+CRGB getColorByCurTeam() {
+  if      (curTeam == RED_TEAM)  return RED_RGB;
+  else if (curTeam == BLUE_TEAM) return BLUE_RGB;
+  else                           return NOONE_RGB;
 }
 
 void clearStrip() {
@@ -167,6 +177,46 @@ void waiting() {
   curLedPosition += dir;
   clearStrip();
   lightFlame(curLedPosition);
+}
+
+bool arming() {
+  if (!isInProcess) {
+    isInProcess = true;
+    armingTimeCounter = xTaskGetTickCount();
+  }
+
+  uint16_t processLed = map(xTaskGetTickCount()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
+  
+  clearStrip();
+  fill_solid(leds, processLed, getColorByCurTeam().nscale8(255*0.1));
+  lightFlame(processLed);
+
+  if (processLed >= LEDS_NUM-1) {
+    isInProcess = false;
+    return true;
+  }
+
+  return false;
+}
+
+bool disarming() {
+  if (!isInProcess) {
+    isInProcess = true;
+    armingTimeCounter = xTaskGetTickCount();
+  }
+
+  uint16_t processLed = LEDS_NUM-1 - map(xTaskGetTickCount()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
+  
+  clearStrip();
+  fill_solid(leds, processLed, getColorByCurTeam().nscale8(255*0.1));
+  lightFlame(processLed);
+
+  if (processLed == 0) {
+    isInProcess = false;
+    return true;
+  }
+
+  return false;
 }
 
 void useLedStrip() {
