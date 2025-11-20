@@ -145,7 +145,6 @@ void lightFlame(uint16_t ledNum) {
 
   CRGB baseColor = getColorByCurTeam();
 
-  clearStrip();
 
   leds[ledNum] = baseColor;
 
