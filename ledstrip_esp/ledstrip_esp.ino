@@ -257,8 +257,8 @@ void TaskMain(void *pvParameters) {
 
             case ST_WAIT_CMD:       // ожидание сообщения, парсинг
                 // Читаем данные из очереди. Значение 0 в 3-м параметре означает, что не ждем, если очередь пуста.
-                // s = xQueueReceive(queue_in, &qitem, 0);
-                s = xQueueReceive(queue_in, &qitem, portMAX_DELAY);
+                s = xQueueReceive(queue_in, &qitem, 0);
+                // s = xQueueReceive(queue_in, &qitem, portMAX_DELAY);
                 // если данные из очереди получены
                 if (s == pdPASS) { 
                     // выполнение команды, подготовка ответного сообщения
@@ -272,6 +272,7 @@ void TaskMain(void *pvParameters) {
                     G_u8MainState = ST_WAIT_CMD;
                 break;
         }
+        useLedStrip();
     }
 }
 
