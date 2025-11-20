@@ -143,10 +143,7 @@ void clearStrip() {
 void lightFlame(uint16_t ledNum) {
   if (ledNum >= LEDS_NUM) ledNum = LEDS_NUM - 1; // защита
 
-  CRGB baseColor;
-  if      (curTeam == RED_TEAM)  baseColor = RED_RGB;
-  else if (curTeam == BLUE_TEAM) baseColor = BLUE_RGB;
-  else                           baseColor = NOONE_RGB;
+  CRGB baseColor = getColorByCurTeam();
 
   clearStrip();
 
