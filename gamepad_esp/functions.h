@@ -106,7 +106,7 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 
 	espnow_msg_t msg;
     uint32_t var = (xTaskGetTickCount() - *time);
-    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, DISPLAY_WIDTH);
+    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, MAX_PROGRESS);
 
     while (*progress < new_progress && *progress < MAX_PROGRESS) {
 
