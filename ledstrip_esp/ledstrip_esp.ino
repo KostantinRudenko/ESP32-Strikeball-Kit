@@ -35,7 +35,7 @@ const uint8_t NTF_SEND_FAIL_WIFI  = 0b00001000;
 #define RED_RGB      CRGB(255,0,0)
 #define BLUE_RGB     CRGB(0,0,255)
 
-#define LED_COFF     0.3
+#define LED_COFF     0.45
 #define LED_GRADIENT 2
 
 #define NOT_CLEAR    false
