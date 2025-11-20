@@ -236,7 +236,12 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
         return true;    
     }
 
-    useLedStrip();
+    if (rec_msg->cmd > 2) {
+      ledState = rec_msg->cmd;
+      curTeam  = rec_msg->data[1];
+      log_i("Led state: %d, Current team: %d", ledState, curTeam);
+    }
+
     return false; 
 }
 
