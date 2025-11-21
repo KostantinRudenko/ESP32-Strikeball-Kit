@@ -178,17 +178,21 @@ void waiting() {
 bool arming() {
   if (!isInProcess) {
     isInProcess = true;
-    armingTimeCounter = xTaskGetTickCount();
+    armingTimeCounter = millis();
+    log_i("started ARMING");
+    return false;
   }
 
-  uint16_t processLed = map(xTaskGetTickCount()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
+  uint16_t processLed = map(millis()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
   
   clearStrip();
   fill_solid(leds, processLed, getColorByCurTeam().nscale8(255*0.1));
   lightFlame(processLed);
 
-  if (processLed >= LEDS_NUM-1) {
+  if (millis()-armingTimeCounter > armingTime) {
     isInProcess = false;
+    processLed = 0;
+    log_i("stoped ARMING");
     return true;
   }
 
@@ -198,17 +202,24 @@ bool arming() {
 bool disarming() {
   if (!isInProcess) {
     isInProcess = true;
-    armingTimeCounter = xTaskGetTickCount();
+    armingTimeCounter = millis();
+    log_i("started DISARMING");
+    return false;
   }
 
-  uint16_t processLed = LEDS_NUM-1 - map(xTaskGetTickCount()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
-  
+  uint16_t processLed = LEDS_NUM - map(millis()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
+
+  if (processLed < 0) processLed = 0;
+  if (processLed >= LEDS_NUM) processLed = LEDS_NUM-1;
+
   clearStrip();
   fill_solid(leds, processLed, getColorByCurTeam().nscale8(255*0.1));
   lightFlame(processLed);
 
-  if (processLed == 0) {
+  if (millis()-armingTimeCounter > armingTime) {
     isInProcess = false;
+    processLed = 0;
+    log_i("stoped DISARMING");
     return true;
   }
 
@@ -218,6 +229,7 @@ bool disarming() {
 void useLedStrip() {
   switch (ledState) {
     case WaitingForCmd:
+      isInProcess = false;
       if (xTaskGetTickCount() - tm > 50) {
         waiting();
         tm = xTaskGetTickCount();
