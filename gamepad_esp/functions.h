@@ -395,16 +395,24 @@ bool Domination(ListParameter* params, team_t* winner) {
 					printTFTText("    ARMING    ", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     outMsg.data[0] = BROADCAST;
                     outMsg.data[1] = MP3_CAP_POINT;
+
+					ledMsg.cmd = START_ARMING;
+					ledMsg.data[1] = redValue ? RED : BLUE;
                 }
                 else {
 					printTFTText("DISARMING", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     // Проигрываем на базе команды, которая не деактивирует точку
                     outMsg.data[0] = G_u8Team - 1;
                     outMsg.data[1] = MP3_CAP_OUR_POINT;
+
+					ledMsg.cmd = START_DISARMING;
+					ledMsg.data[1] = G_u8Team;
                 }
                 outMsg.cmd = PLAY_TRACK;
                 if (!q_out_msg.push(&outMsg))
                     log_e("Error: q_out_msg is full");
+				if (!q_out_msg.push(&ledMsg))
+					log_e("Error: q_out_msg is full");
                 st++;
             }
             break;
@@ -447,16 +455,31 @@ bool Domination(ListParameter* params, team_t* winner) {
                     G_u8Team = NOONE;
                 }
 
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+
                 RenderStaticView();
                 st++; // точка захвачена/освобождена
             }
-            else if (!redValue && !blueValue) // отпуcтили кнопку раньше ArmTime
+            else if (!redValue && !blueValue) { // отпуcтили кнопку раньше ArmTime
                 st = 1;
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+            }
             break;
 
         case 4:  // ждем отжатия обоих кнопок
-            if (!redValue && !blueValue)
+            if (!redValue && !blueValue) {
                 st = 1;
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+            }
             break;
 
         case 5:  // время игры истекло
@@ -467,7 +490,7 @@ bool Domination(ListParameter* params, team_t* winner) {
             st++;
 
         case 6:
-            if (true) { // TODO if (fEmpty) {
+            if (fEmpty) {
                 st = 0;
                 return true;
             }
