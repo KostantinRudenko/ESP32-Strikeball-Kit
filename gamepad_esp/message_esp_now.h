@@ -99,9 +99,10 @@ typedef enum {
 
 const uint8_t PING                   = 1;
 const uint8_t PLAY_TRACK             = 2;
-const uint8_t LIGHT_LEDS             = 3;
-const uint8_t LIGHT_LEDS_BY_PROGRESS = 4;
-const uint8_t CLEAR_STRIP            = 5;
+const uint8_t WAITING                = 3;
+const uint8_t START_ARMING           = 4;
+const uint8_t START_DISARMING        = 5;
+const uint8_t POINT_ARMED            = 6;
 
 typedef struct {
     uint8_t cmd;            // команда

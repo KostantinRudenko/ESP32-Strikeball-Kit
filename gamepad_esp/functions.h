@@ -3,6 +3,7 @@
 
 #include "global.h"
 #include "getTimeHMS.h"
+#include "message_esp_now.h"
 #include <csignal>
 #include <cstdint>
 
@@ -105,18 +106,18 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 
 	espnow_msg_t msg;
     uint32_t var = (xTaskGetTickCount() - *time);
-    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, DISPLAY_WIDTH);
+    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, MAX_PROGRESS);
 
     while (*progress < new_progress && *progress < MAX_PROGRESS) {
 
-		if (*progress % 10 == 0) {
-			msg.cmd = LIGHT_LEDS_BY_PROGRESS;
-			msg.data[0] = 2;
-      msg.data[1] = G_u8Team;
-			msg.data[2] = *progress;
-			if (!q_out_msg.push(&msg))
-				log_e("Error: q_out_msg is full");
-		}
+		// if (*progress % 10 == 0) {
+			// msg.cmd = LIGHT_LEDS_BY_PROGRESS;
+			// msg.data[0] = 2;
+      		// msg.data[1] = G_u8Team;
+			// msg.data[2] = *progress;
+			// if (!q_out_msg.push(&msg))
+			// 	log_e("Error: q_out_msg is full");
+		// }
 
 		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, map(*progress, 0, MAX_PROGRESS, 0, PROGRESS_BAR_WIDTH), PROGRESS_BAR_HEIGHT, TFT_WHITE);
         tone(BUZZER_PIN, *progress * 25);
@@ -127,12 +128,12 @@ uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
 			clearSpace(0, PROGRESS_BAR_Y_POSITION, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
 			*progress = MAX_PROGRESS;
 
-      msg.cmd = LIGHT_LEDS_BY_PROGRESS;
-			msg.data[0] = 2;
-      msg.data[1] = G_u8Team;
-			msg.data[2] = *progress;
-			if (!q_out_msg.push(&msg))
-				log_e("Error: q_out_msg is full");
+      		// msg.cmd = LIGHT_LEDS_BY_PROGRESS;
+			// msg.data[0] = 2;
+      		// msg.data[1] = G_u8Team;
+			// msg.data[2] = *progress;
+			// if (!q_out_msg.push(&msg))
+				// log_e("Error: q_out_msg is full");
         
 			return MAX_PROGRESS;
 		}
@@ -345,6 +346,7 @@ bool Domination(ListParameter* params, team_t* winner) {
 
     static int8_t i8CheckTimeCount;
     espnow_msg_t outMsg;
+    espnow_msg_t ledMsg;
 
     redButton.read();
     blueButton.read();
@@ -361,6 +363,12 @@ bool Domination(ListParameter* params, team_t* winner) {
             secs = game_timer.Secs();
 
             i8CheckTimeCount = getTimeMarker(secs);
+
+			ledMsg.cmd = WAITING;
+			ledMsg.data[0] = 2;
+			ledMsg.data[1] = G_u8Team;
+			if (!q_out_msg.push(&ledMsg))
+				log_e("Error: q_out_msg is full");
 
 			printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 			printTFTText(team_names[RED], PADDING, PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
@@ -387,16 +395,24 @@ bool Domination(ListParameter* params, team_t* winner) {
 					printTFTText("    ARMING    ", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     outMsg.data[0] = BROADCAST;
                     outMsg.data[1] = MP3_CAP_POINT;
+
+					ledMsg.cmd = START_ARMING;
+					ledMsg.data[1] = redValue ? RED : BLUE;
                 }
                 else {
 					printTFTText("DISARMING", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     // Проигрываем на базе команды, которая не деактивирует точку
                     outMsg.data[0] = G_u8Team - 1;
                     outMsg.data[1] = MP3_CAP_OUR_POINT;
+
+					ledMsg.cmd = START_DISARMING;
+					ledMsg.data[1] = G_u8Team;
                 }
                 outMsg.cmd = PLAY_TRACK;
                 if (!q_out_msg.push(&outMsg))
                     log_e("Error: q_out_msg is full");
+				if (!q_out_msg.push(&ledMsg))
+					log_e("Error: q_out_msg is full");
                 st++;
             }
             break;
@@ -439,16 +455,31 @@ bool Domination(ListParameter* params, team_t* winner) {
                     G_u8Team = NOONE;
                 }
 
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+
                 RenderStaticView();
                 st++; // точка захвачена/освобождена
             }
-            else if (!redValue && !blueValue) // отпуcтили кнопку раньше ArmTime
+            else if (!redValue && !blueValue) { // отпуcтили кнопку раньше ArmTime
                 st = 1;
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+            }
             break;
 
         case 4:  // ждем отжатия обоих кнопок
-            if (!redValue && !blueValue)
+            if (!redValue && !blueValue) {
                 st = 1;
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+            }
             break;
 
         case 5:  // время игры истекло
@@ -459,7 +490,7 @@ bool Domination(ListParameter* params, team_t* winner) {
             st++;
 
         case 6:
-            if (true) { // TODO if (fEmpty) {
+            if (fEmpty) {
                 st = 0;
                 return true;
             }

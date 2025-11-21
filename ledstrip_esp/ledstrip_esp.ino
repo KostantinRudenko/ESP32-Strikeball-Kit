@@ -31,9 +31,12 @@ const uint8_t NTF_SEND_FAIL_WIFI  = 0b00001000;
 #define MAX_PROGRESS 100
 
 #define LED_OFF      CRGB(0,0,0)
-#define WHITE_RGB    CRGB(255,255,255)
+#define NOONE_RGB    CRGB(128,128,0)
 #define RED_RGB      CRGB(255,0,0)
 #define BLUE_RGB     CRGB(0,0,255)
+
+#define LED_COFF     0.45
+#define LED_GRADIENT 2
 
 #define NOT_CLEAR    false
 
@@ -55,8 +58,17 @@ enum task_wifi_states_t {
 
 enum Commands {
   Ping = 1,                 // сканирование
-  LightLeds = 3,
-  LightLedsByProgress
+  WaitingForCmd = 3,
+  Arming,
+  Disarming,
+  PointArmed,
+  StopLed
+};
+
+enum Teams {
+  NOONE = 0,
+  RED_TEAM,
+  BLUE_TEAM
 };
 
 enum base_states_t {
@@ -82,15 +94,32 @@ QueueHandle_t queue_in;                                           // очере�
 uint8_t G_u8MainState = ST_INIT;                                  // Состояние главной задачи
 uint8_t G_u8WiFiState = 0;                                        // Состояние задачи WiFi
 
-CRGB leds[LEDS_NUM];
-bool isLedInitialized = false;
-
 msg_esp_now_t outMsg;
 
 static TaskHandle_t hTaskWiFi;
 static TaskHandle_t hTaskMain;
 
 #pragma endregion Variables
+
+#pragma region ________________________________ LedVariables
+
+CRGB leds[LEDS_NUM];
+bool isLedInitialized = false;
+
+uint8_t curTeam = NOONE;
+uint8_t ledState = WaitingForCmd;
+uint16_t curLedPosition = 0; // использовать только для Waiting
+
+bool isGoingBack = false;
+int8_t dir = 1; // направление движения
+
+uint32_t tm = 0;
+uint32_t armingTimeCounter;
+
+bool isInProcess = false; // для arming/disarming
+uint32_t armingTime = 10000; // Время на arming/disarming
+
+#pragma endregion LedVariables
 
 #pragma region ________________________________ Functions
 
@@ -101,32 +130,125 @@ void initLedStrip() {
   FastLED.show();
 }
 
-void lightLeds(uint16_t amount, CRGB color, bool isClear=true) {
-  if (isClear) {
-    fill_solid(leds, LEDS_NUM, LED_OFF);
-    }
-  fill_solid(leds, amount, color);
+CRGB getColorByCurTeam() {
+  if      (curTeam == RED_TEAM)  return RED_RGB;
+  else if (curTeam == BLUE_TEAM) return BLUE_RGB;
+  else                           return NOONE_RGB;
+}
+
+void clearStrip() {
+  fill_solid(leds, LEDS_NUM, LED_OFF);
+}
+
+void lightFlame(uint16_t ledNum) {
+  if (ledNum >= LEDS_NUM) ledNum = LEDS_NUM - 1; // защита
+
+  CRGB baseColor = getColorByCurTeam();
+
+
+  leds[ledNum] = baseColor;
+
+  for (int i = 1; i <= LED_GRADIENT; ++i) {
+    int16_t left  = (int16_t)ledNum - i;
+    int16_t right = (int16_t)ledNum + i;
+
+    int16_t scale = (int16_t)(255.0 * (1.0 - LED_COFF * i));
+    if (scale < 0) scale = 0;
+    if (scale > 255) scale = 255;
+
+    CRGB faded = baseColor;
+    faded.nscale8((uint8_t)scale);
+
+    if (left >= 0 && left < LEDS_NUM)  leds[left]  = faded;
+    if (right >= 0 && right < LEDS_NUM) leds[right] = faded;
+  }
+
   FastLED.show();
 }
 
-void lightLedsByProgress(uint8_t progress, CRGB color, bool isClear=true) {
-  if (isClear) {
-    fill_solid(leds, LEDS_NUM, LED_OFF);
-    }
-  fill_solid(leds,
-             map(progress, 0, MAX_PROGRESS, 0, LEDS_NUM),
-             color);
-  FastLED.show();
+void waiting() {
+  if (curLedPosition <= 0) dir = +1;
+  else if (curLedPosition >= LEDS_NUM-1) dir = -1;
+
+  curLedPosition += dir;
+  clearStrip();
+  lightFlame(curLedPosition);
 }
 
-void useLedStrip(msg_esp_now_t* msg) {
-  switch (msg->cmd) {
-    case LightLeds:
-      log_i("Light leds command");
-      lightLeds(LEDS_NUM, msg->data[1]);
-    case LightLedsByProgress:
-      log_i("Light leds by progress command: progress - %d, team - %d", msg->data[2], msg->data[1] == 0 ? "NOONE" : (msg->data[1] == 1 ? "RED" : "BLUE");
-      lightLedsByProgress(msg->data[2], msg->data[1] == 0 ? RED_RGB : BLUE_RGB);
+bool arming() {
+  if (!isInProcess) {
+    isInProcess = true;
+    armingTimeCounter = millis();
+    log_i("started ARMING");
+    return false;
+  }
+
+  uint16_t processLed = map(millis()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
+  
+  clearStrip();
+  fill_solid(leds, processLed, getColorByCurTeam().nscale8(255*0.1));
+  lightFlame(processLed);
+
+  if (millis()-armingTimeCounter > armingTime) {
+    isInProcess = false;
+    processLed = 0;
+    log_i("stoped ARMING");
+    return true;
+  }
+
+  return false;
+}
+
+bool disarming() {
+  if (!isInProcess) {
+    isInProcess = true;
+    armingTimeCounter = millis();
+    log_i("started DISARMING");
+    return false;
+  }
+
+  uint16_t processLed = LEDS_NUM - map(millis()-armingTimeCounter, 0, armingTime, 0, LEDS_NUM-1);
+
+  if (processLed < 0) processLed = 0;
+  if (processLed >= LEDS_NUM) processLed = LEDS_NUM-1;
+
+  clearStrip();
+  fill_solid(leds, processLed, getColorByCurTeam().nscale8(255*0.1));
+  lightFlame(processLed);
+
+  if (millis()-armingTimeCounter > armingTime) {
+    isInProcess = false;
+    processLed = 0;
+    log_i("stoped DISARMING");
+    return true;
+  }
+
+  return false;
+}
+
+void useLedStrip() {
+  switch (ledState) {
+    case WaitingForCmd:
+      isInProcess = false;
+      if (xTaskGetTickCount() - tm > 50) {
+        waiting();
+        tm = xTaskGetTickCount();
+      }
+      break;
+      
+    case Arming:
+      if (arming())
+        ledState = WaitingForCmd;
+      break;
+    case Disarming:
+      if (disarming())
+          ledState = WaitingForCmd;
+      break;
+    case PointArmed:
+      isInProcess = false;
+      ledState = WaitingForCmd;
+      log_i("stopped progressing");
+      break;
   }
 }
 #pragma endregion Functions
@@ -181,11 +303,19 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
         ack_msg->data[0] = rec_msg->data[0];
         ack_msg->data[1] = isLedInitialized ? DEVICE_READY : DEVICE_NO_INIT;
 
+        armingTime = rec_msg->data[1] * 1000;
+        log_i("arming time = %d", armingTime);
+
         log_i("Состояние = %d", ack_msg->data[1]);
         return true;    
     }
 
-    useLedStrip(rec_msg);
+    if (rec_msg->cmd > 2) {
+      ledState = rec_msg->cmd;
+      curTeam  = rec_msg->data[1];
+      log_i("Led state: %d, Current team: %d", ledState, curTeam);
+    }
+
     return false; 
 }
 
@@ -206,8 +336,8 @@ void TaskMain(void *pvParameters) {
 
             case ST_WAIT_CMD:       // ожидание сообщения, парсинг
                 // Читаем данные из очереди. Значение 0 в 3-м параметре означает, что не ждем, если очередь пуста.
-                // s = xQueueReceive(queue_in, &qitem, 0);
-                s = xQueueReceive(queue_in, &qitem, portMAX_DELAY);
+                s = xQueueReceive(queue_in, &qitem, 0);
+                // s = xQueueReceive(queue_in, &qitem, portMAX_DELAY);
                 // если данные из очереди получены
                 if (s == pdPASS) { 
                     // выполнение команды, подготовка ответного сообщения
@@ -221,6 +351,7 @@ void TaskMain(void *pvParameters) {
                     G_u8MainState = ST_WAIT_CMD;
                 break;
         }
+        useLedStrip();
     }
 }
 
@@ -329,6 +460,10 @@ void setup() {
 
     initLedStrip();
     isLedInitialized = true;
+
+    fill_solid(leds, LEDS_NUM, LED_OFF);
+    
+    FastLED.show();
 
     log_i("Inited led Strip");
 
