@@ -117,7 +117,7 @@ uint32_t tm = 0;
 uint32_t armingTimeCounter;
 
 bool isInProcess = false; // для arming/disarming
-uint16_t armingTime = 5000; // Время на arming/disarming
+uint32_t armingTime = 10000; // Время на arming/disarming
 
 #pragma endregion LedVariables
 
@@ -302,6 +302,9 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
         ack_msg->cmd = rec_msg->cmd;
         ack_msg->data[0] = rec_msg->data[0];
         ack_msg->data[1] = isLedInitialized ? DEVICE_READY : DEVICE_NO_INIT;
+
+        armingTime = rec_msg->data[1] * 1000;
+        log_i("arming time = %d", armingTime);
 
         log_i("Состояние = %d", ack_msg->data[1]);
         return true;    

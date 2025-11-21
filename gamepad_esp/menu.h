@@ -673,6 +673,7 @@ bool pressAnyKey() {
                 outMsg.cmd = PING;
                 point = point < MAX_POINTS - 1 ? point + 1 : 0;
                 outMsg.data[0] = point;
+                outMsg.data[1] = G_u32ActivationTimeMS / 1000;
                 q_out_msg.push(&outMsg);
                 tm = xTaskGetTickCount();
             }
