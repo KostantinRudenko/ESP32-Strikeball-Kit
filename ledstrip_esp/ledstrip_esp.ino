@@ -237,8 +237,17 @@ void useLedStrip() {
       break;
       
     case Arming:
+      if (arming())
+        ledState = WaitingForCmd;
       break;
     case Disarming:
+      if (disarming())
+          ledState = WaitingForCmd;
+      break;
+    case PointArmed:
+      isInProcess = false;
+      ledState = WaitingForCmd;
+      log_i("stopped progressing");
       break;
   }
 }
