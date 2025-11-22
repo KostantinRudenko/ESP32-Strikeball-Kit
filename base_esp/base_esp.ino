@@ -1,4 +1,4 @@
-const String Gc_sGamepadMAC = "B0:A7:32:2A:BA:10";                // MAC адрес игрового пульта в формате строки "12:34:56:78:9A:BC"
+const String Gc_sGamepadMAC = "80:F3:DA:61:AC:70";                // MAC адрес игрового пульта в формате строки "12:34:56:78:9A:BC"
 /*================================================================
                    Модуль базы
 Принимает по WiFi номер трека от игрового модуля и проигрывает его
@@ -84,7 +84,7 @@ enum base_states_t {
 
 typedef struct msg_esp_now_t {
   uint8_t cmd;
-  uint8_t data[2]; 
+  uint8_t data[3]; 
 } msg_esp_now_t;
 
 String G_sThisDeviceMAC;                                          // MAC адрес этого устройства в формате строки "12:34:56:78:9A:BC"
@@ -220,7 +220,7 @@ void loop() {}
 
 #pragma region ________________________________ WiFi_task
 
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
     if (status == ESP_NOW_SEND_SUCCESS)
         xTaskNotify(hTaskMain, NTF_SEND_OK_WIFI, eSetBits);
     else
@@ -228,7 +228,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
     msg_esp_now_t qitem;
 
     memcpy(&qitem, incomingData, sizeof(msg_esp_now_t));

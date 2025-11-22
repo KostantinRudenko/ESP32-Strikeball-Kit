@@ -3,11 +3,12 @@
 
 #include "global.h"
 #include "getTimeHMS.h"
+#include "message_esp_now.h"
 #include <csignal>
+#include <cstdint>
 
 #pragma region ________________________________ Constants
 
-//const int16_t LCD_H_DOTS = 100;                // число точек LCD по горизонтали  = число точек на символ * число символов (5*20=100)
 const char *team_names[3] = {
     "    ",
     " RED",
@@ -32,25 +33,27 @@ TimerExt timerBlue(true);                     // таймер прямого с�
 
 #pragma endregion Variables
 
-void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, const String font){
-    tft.loadFont(font);
+void printTFTText(String text, uint16_t x, uint16_t y, bool centerByX, bool CenterByY, const GFXfont *font){
+    tft.setFreeFont(font);
 
     if (centerByX) {
-        x = (TFT_WIDTH - tft.textWidth(text)) / 2;
+        x = (DISPLAY_WIDTH - tft.textWidth(text)) / 2;
     }
+	else { x = x + PADDING; }
+
     if (CenterByY) {
-        y = (TFT_HEIGHT - tft.fontHeight()) / 2;
+        y = (DISPLAY_HEIGHT - tft.fontHeight()) / 2;
     }
+	else { y = y + PADDING; }
 
 	tft.drawString(text, x, y);
 
-	tft.unloadFont();
+	//tft.unloadFont();
 }
 
-uint16_t getTextWidth(String s, const String font) {
-	tft.loadFont(font);
+uint16_t getTextWidth(String s, const GFXfont *font) {
+	tft.setFreeFont(font);
 	uint16_t width = tft.textWidth(s);
-	tft.unloadFont();
 	return width;
 }
 
@@ -89,53 +92,61 @@ String prapare3DigitsIntVar(uint16_t var) {
 	return resultString;
 }
 
-uint32_t ProcessButton(const Button button, uint32_t *progress, uint32_t *time) {
+uint32_t ProcessButton(const Button button, uint8_t *progress, uint32_t *time) {
     if (button.isReleased()) {
         *progress = 0;
         *time = xTaskGetTickCount();
+        clearSpace(0, PADDING+HEADER_SPACE_H, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
         return 0;
     }
 
-    if (*progress >= PROGRESS_BAR_WIDTH) return PROGRESS_BAR_WIDTH;
     if (*progress == 0) {
-        //lcd.setCursor(0, 1);
-        //lcd.print(F("                    "));
-        clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE_H, TFT_BLACK);
+        clearSpace(0, PADDING, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE, TFT_BLACK);
     }
 
+	espnow_msg_t msg;
     uint32_t var = (xTaskGetTickCount() - *time);
-    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, DISPLAY_WIDTH);
+    uint8_t new_progress = map(var, 0, G_u32ActivationTimeMS, 0, MAX_PROGRESS);
 
-    while (*progress < new_progress) {
+    while (*progress < new_progress && *progress < MAX_PROGRESS) {
 
-		if (*progress % 10 == 0) {
-			espnow_msg_t msg;
-			msg.cmd = LIGHT_STRIP;
-			msg.data[0] = G_u8Team;
-			msg.data[1] = *process;
-			sendESP_NOW_ToMAC(G_aru8MACs[2], &msg);
-		}
+		// if (*progress % 10 == 0) {
+			// msg.cmd = LIGHT_LEDS_BY_PROGRESS;
+			// msg.data[0] = 2;
+      		// msg.data[1] = G_u8Team;
+			// msg.data[2] = *progress;
+			// if (!q_out_msg.push(&msg))
+			// 	log_e("Error: q_out_msg is full");
+		// }
 
-        //lcd.setCursor(*progress / 5, 1);
-        //lcd.print((char)(*progress % 5));
-		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, *progress, PROGRESS_BAR_HEIGHT, TFT_WHITE);
+		tft.fillRect(PROGRESS_BAR_X_POSITION, PROGRESS_BAR_Y_POSITION, map(*progress, 0, MAX_PROGRESS, 0, PROGRESS_BAR_WIDTH), PROGRESS_BAR_HEIGHT, TFT_WHITE);
         tone(BUZZER_PIN, *progress * 25);
         *progress += 1;
+		log_d("progress: %d; progress bar width: %d", *progress, map(*progress, 0, MAX_PROGRESS, 0, PROGRESS_BAR_WIDTH));
+
+		if (*progress >= MAX_PROGRESS) {
+			clearSpace(0, PROGRESS_BAR_Y_POSITION, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
+			*progress = MAX_PROGRESS;
+
+      		// msg.cmd = LIGHT_LEDS_BY_PROGRESS;
+			// msg.data[0] = 2;
+      		// msg.data[1] = G_u8Team;
+			// msg.data[2] = *progress;
+			// if (!q_out_msg.push(&msg))
+				// log_e("Error: q_out_msg is full");
+        
+			return MAX_PROGRESS;
+		}
     }
 
-    if (*progress >= PROGRESS_BAR_WIDTH) {
-        // *progress = LCD_H_DOTS;
-        //lcd.setCursor(0, 1);
-        //lcd.print(F("                   "));
-		clearSpace(0, HEADER_HEIGHT, DISPLAY_WIDTH, HEADER_SPACE_H+SPACE_H, TFT_BLACK);
-        return PROGRESS_BAR_WIDTH;
-    }
+
     return *progress * 100UL / PROGRESS_BAR_WIDTH;
 }
 
 
 void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
     if (send_event->msg.cmd == PING) {
+		static uint32_t tm = 0;
         uint8_t point = send_event->msg.data[0];
         G_arPeerStatus[point] = PEER_NO_CONNECT;        // Упреждающая установка. При успешном приеме будет перезаписана
         if (send_event->status & MSG_RECV_OK) {
@@ -144,9 +155,12 @@ void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
                 G_arPeerStatus[point] = recv_msg->data[1];      // если сообщение принято
         }
         // отрисовка состояния точки
-        //lcd.setCursor(6, 2 + point);
-        //lcd.print(sPointNameStates[G_arPeerStatus[point]]);
-        printTFTText(sPointNameStates[G_arPeerStatus[point]], NO_X, HEADER_SPACE_H*point, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+		if (xTaskGetTickCount() - tm > 3000) {
+			printTFTText(sPointNameStates[G_arPeerStatus[point]],
+						 NO_X, HEADER_SPACE_H+STRING_SPACE_H*(point+1),
+						 CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			tm = xTaskGetTickCount();
+		}
     }
 }
 
@@ -175,71 +189,23 @@ bool sendESP_NOW() {
     return false;
 }
 
-bool sendESP_NOW_ToMAC(const uint8_t *mac_addr, espnow_msg_t *msg) {
-    //----------------------------------------------------------------------------+
-    //         Передать сообщение через ESP-NOW на указанный MAC-адрес            |
-    //  mac_addr - целевой MAC-адрес (6 байт)                                     |
-    //  msg - указатель на структуру сообщения espnow_msg_t                       |
-    //  return true, если передача завершена, иначе false                         |
-    //----------------------------------------------------------------------------+
-    static uint8_t st = 0;
-    uint32_t rv;
-
-    if (st == 0) {
-        if (msg == NULL || mac_addr == NULL) {
-            log_e("Invalid MAC address or message");
-            return false;
-        }
-
-        send_evt.msg = *msg; // Копируем сообщение
-        send_evt.status = MSG_RDY_TO_SEND;
-        if (esp_now_send(mac_addr, (uint8_t *) &send_evt.msg, sizeof(espnow_msg_t)) == ESP_OK) {
-            send_evt.status |= MSG_PUT_SEND_CB;
-            xTaskNotify(hTaskWiFi, NTF_SEND_WIFI, eSetBits);
-            st++;
-        } else {
-            log_e("Failed to send ESP-NOW message");
-            return false;
-        }
-    }
-    else if (xTaskNotifyWait(0, NTF_SEND_FINAL, &rv, 0) == pdTRUE) {
-        send_evt.status |= MSG_SEND_FINAL;
-        parseMessage(&send_evt, &recv_evt.msg);
-        st = 0;
-        return true;
-    }
-    return false;
-}
-
 void RenderStaticView() {
-	clearSpace(0, 0, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
-	// убрать на clearSpace
     switch (G_u8GameMode) {
         case DOMIN:
-			printTFTText("DOMINATION", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            /*
-            lcd.print(F("     DOMINATION     "));
-            lcd.setCursor(0, 1);
-            lcd.print(F("                    "));
-            lcd.setCursor(6, 1);
-            showTimeHMS(lcd, game_timer.Secs());
+			printTFTText("DOMINATION", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
-            lcd.setCursor(5, 2);
-            lcd.print(F("     "));
-            lcd.setCursor(5, 3);
-            lcd.print(F("     "));
-            */
 
-            if (G_u8Team != NOONE)
-            {
-                //lcd.setCursor(5, 1 + G_u8Team);
-                //lcd.print(F("====>"));
-                printTFTText("====>", NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            if (G_u8Team != NOONE) {
+                printTFTText("====>", NO_X, PADDING+HEADER_SPACE_H*G_u8Team+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             }
+			else {
+				printTFTText("           ", NO_X, PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+				printTFTText("           ", NO_X, PADDING+HEADER_SPACE_H*2+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			}
             break;
 
         case DOMIN_PRO:
-			printTFTText("DOMINATION PRO", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText("DOMINATION PRO", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             break;
 
         case BOMB:
@@ -265,17 +231,10 @@ void RenderStaticView() {
             "====================" - идет активация/дезактивация заряда (progress bar)
             */
             if (G_u8GameMode == BOMB)
-				printTFTText("BOMB MODE", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-                //lcd.print(F("      BOMB MODE     "));
+				printTFTText("BOMB MODE", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             else
-				printTFTText("CONTROL POINT", NO_X, SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-                //lcd.print(F("   CONTROL POINT    "));
-			printTFTText("Game time: ", 0, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-            //lcd.setCursor(0, 1);
-            //lcd.print(F("Game time:  "));
-            //lcd.setCursor(12, 1);
-            //showTimeHMS(lcd, game_timer.Secs());
-            printTFTText(String(getTimeHMS(game_timer.Secs())), getTextWidth("Game time: ", STRING_FONT), HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+				printTFTText("CONTROL POINT", NO_X, SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText("Game time: "+(String)getTimeHMS(game_timer.Secs()), PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
             break;
     }
 }
@@ -373,13 +332,13 @@ bool Domination(ListParameter* params, team_t* winner) {
     +--------------------+--------------------+*/
     static uint8_t st = 0;
     static uint32_t secs = game_timer.Secs();
-	static uint16_t teamTimerPositionX = DISPLAY_WIDTH-getTextWidth("00:00:00", HEADER_FONT);
-	static uint16_t redTimerPositionY = HEADER_SPACE_H+STRING_SPACE_H;
-	static uint16_t blueTimerPositionY = HEADER_SPACE_H+STRING_SPACE_H+HEADER_SPACE_H;
+	static uint16_t teamTimerPositionX = DISPLAY_WIDTH-getTextWidth("00:00:00   ", HEADER_FONT)-PADDING;
+	static uint16_t redTimerPositionY = PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE;
+	static uint16_t blueTimerPositionY = PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE+HEADER_SPACE_H;
     static uint32_t time_press_red = xTaskGetTickCount();
     static uint32_t time_press_blue = xTaskGetTickCount();
-    static uint32_t progressRed = 0;
-    static uint32_t progressBlue = 0;
+    static uint8_t progressRed = 0;
+    static uint8_t progressBlue = 0;
     uint8_t redValue, blueValue;
     static uint32_t prev; // пред. значения таймера команды, владеющей точкой
     static uint8_t point; // 0,1
@@ -387,6 +346,7 @@ bool Domination(ListParameter* params, team_t* winner) {
 
     static int8_t i8CheckTimeCount;
     espnow_msg_t outMsg;
+    espnow_msg_t ledMsg;
 
     redButton.read();
     blueButton.read();
@@ -396,37 +356,27 @@ bool Domination(ListParameter* params, team_t* winner) {
     switch (st)
     {
         case 0:
-            //lcd.clear();
             clearScreen();
-            // digitalWrite(RED_LED_PIN, LED_OFF);
-            // digitalWrite(BLUE_LED_PIN, LED_OFF);
             G_u8Team = NOONE;
-            //lcd.print(F("     DOMINATION"));
-            printTFTText("DOMINATION", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+            printTFTText("DOMINATION", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             game_timer.SetTime(G_u32GameTimeMS);  // устанавливаем таймер игры
             secs = game_timer.Secs();
 
             i8CheckTimeCount = getTimeMarker(secs);
 
-            //lcd.setCursor(6, 1);
-            //showTimeHMS(lcd, secs);
-			printTFTText(getTimeHMS(secs), NO_X, HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			ledMsg.cmd = WAITING;
+			ledMsg.data[0] = 2;
+			ledMsg.data[1] = G_u8Team;
+			if (!q_out_msg.push(&ledMsg))
+				log_e("Error: q_out_msg is full");
 
-            // названия команд
-            //lcd.setCursor(0, 2);
-            //lcd.print(team_names[RED]);
-				printTFTText(team_names[RED], 0, HEADER_SPACE_H+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            //lcd.setCursor(0, 3);
-            //lcd.print(team_names[BLUE]);
-				printTFTText(team_names[BLUE], 0, HEADER_SPACE_H*2+STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			printTFTText(team_names[RED], PADDING, PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText(team_names[BLUE], PADDING, PADDING+HEADER_SPACE_H*2+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
 
             // таймеры команд
-            //lcd.setCursor(12, 2);
-            //showTimeHMS(lcd, timerRed.Secs());
 			printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            //lcd.setCursor(12, 3);
-            //showTimeHMS(lcd, timerBlue.Secs());
 			printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
             game_timer.Start();                   // запускаем таймер игры
@@ -440,24 +390,29 @@ bool Domination(ListParameter* params, team_t* winner) {
 
         case 2:   // статика - отображаем время
             if (redValue || blueValue) {
-                //lcd.setCursor(0, 0);
-				clearSpace(0, 0, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
+				//clearSpace(0, PADDING, DISPLAY_WIDTH, HEADER_SPACE_H, TFT_BLACK);
                 if (G_u8Team == NOONE) {
-                    //lcd.print(F("        ARMING      "));
-					printTFTText("ARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+					printTFTText("    ARMING    ", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     outMsg.data[0] = BROADCAST;
                     outMsg.data[1] = MP3_CAP_POINT;
+
+					ledMsg.cmd = START_ARMING;
+					ledMsg.data[1] = redValue ? RED : BLUE;
                 }
                 else {
-                    //lcd.print(F("      DISARMING     "));
-					printTFTText("DISARMING", NO_X, 0, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+					printTFTText("DISARMING", NO_X, PADDING, CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                     // Проигрываем на базе команды, которая не деактивирует точку
                     outMsg.data[0] = G_u8Team - 1;
                     outMsg.data[1] = MP3_CAP_OUR_POINT;
+
+					ledMsg.cmd = START_DISARMING;
+					ledMsg.data[1] = G_u8Team;
                 }
                 outMsg.cmd = PLAY_TRACK;
                 if (!q_out_msg.push(&outMsg))
                     log_e("Error: q_out_msg is full");
+				if (!q_out_msg.push(&ledMsg))
+					log_e("Error: q_out_msg is full");
                 st++;
             }
             break;
@@ -469,11 +424,13 @@ bool Domination(ListParameter* params, team_t* winner) {
                         timerRed.Start();
                         timerBlue.Stop();
                         G_u8Team = RED;
+						log_d("red team timer started. team is RED");
                     }
                     else if (blueValue >= 100) {
                         timerBlue.Start();
                         timerRed.Stop();
                         G_u8Team = BLUE;
+						log_d("blue team timer started. team is BLUE");
                     }
 
                     outMsg.cmd = PLAY_TRACK;
@@ -498,16 +455,31 @@ bool Domination(ListParameter* params, team_t* winner) {
                     G_u8Team = NOONE;
                 }
 
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+
                 RenderStaticView();
                 st++; // точка захвачена/освобождена
             }
-            else if (!redValue && !blueValue) // отпуcтили кнопку раньше ArmTime
+            else if (!redValue && !blueValue) { // отпуcтили кнопку раньше ArmTime
                 st = 1;
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+            }
             break;
 
         case 4:  // ждем отжатия обоих кнопок
-            if (!redValue && !blueValue)
+            if (!redValue && !blueValue) {
                 st = 1;
+                ledMsg.cmd = WAITING;
+                ledMsg.data[1] = G_u8Team;
+                if (!q_out_msg.push(&ledMsg))
+        					log_e("Error: q_out_msg is full");
+            }
             break;
 
         case 5:  // время игры истекло
@@ -533,31 +505,23 @@ bool Domination(ListParameter* params, team_t* winner) {
             timerRed.Stop();
             timerBlue.Stop();
             game_timer.Stop();
-            //lcd.setCursor(12, 2);
-            //showTimeHMS(lcd, timerRed.Secs());
 			printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            //lcd.setCursor(12, 3);
-            //showTimeHMS(lcd, timerBlue.Secs());
 			printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             st = 5;
         }
         else if (st != 3) {
             if (game_timer.Secs() != secs) {
-                //lcd.setCursor(6, 1);
-				clearSpace(0, HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H, TFT_BLACK);
+				//clearSpace(0, HEADER_SPACE_H, DISPLAY_WIDTH, STRING_SPACE_H, TFT_BLACK);
                 secs = game_timer.Secs();
-                //showTimeHMS(lcd, secs);
-                printTFTText(getTimeHMS(secs), DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+                printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 tone(BUZZER_PIN, BUZZER_FREQUENCY, BUZZER_DURATION);
             }
 
             if (G_u8Team == RED) {
                 timerRed.Tick();
                 if (timerRed.Secs() != prev) {
-                    //lcd.setCursor(12, 2);
-					clearSpace(teamTimerPositionX, redTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
+					//clearSpace(teamTimerPositionX, redTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
                     prev = timerRed.Secs();
-                    //showTimeHMS(lcd, timerRed.Secs());
 					printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
                 }
             }
@@ -565,9 +529,7 @@ bool Domination(ListParameter* params, team_t* winner) {
                 timerBlue.Tick();
                 if (timerBlue.Secs() != prev) {
                     prev = timerBlue.Secs();
-                    //lcd.setCursor(12, 3);
-					clearSpace(teamTimerPositionX, blueTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
-                    //showTimeHMS(lcd, timerBlue.Secs());
+					//clearSpace(teamTimerPositionX, blueTimerPositionY, DISPLAY_WIDTH-teamTimerPositionX, HEADER_SPACE_H, TFT_BLACK);
 					printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
                 }
@@ -613,8 +575,8 @@ bool Bomb(ListParameter* params, team_t* winner) {
     static uint32_t time_press_red = xTaskGetTickCount();
     static uint32_t time_press_blue = xTaskGetTickCount();
     static uint32_t start_bomb_time;
-    static uint32_t progressRed = 0;
-    static uint32_t progressBlue = 0;
+    static uint8_t progressRed = 0;
+    static uint8_t progressBlue = 0;
     uint8_t redValue, blueValue;
 
     static bool fEmpty = true;

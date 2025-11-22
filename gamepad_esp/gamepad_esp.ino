@@ -22,8 +22,8 @@ const uint8_t broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 #include <JC_Button.h>
 #include <cppQueue.h>               // https://github.com/SMFSW/Queue/tree/master
 #include <TFT_eSPI.h>
-#include "FS.h"
-#include "SPIFFS.h"
+#include "esp_log.h"
+#include "esp_task_wdt.h"
 
 #define	IMPLEMENTATION	FIFO
 
@@ -60,42 +60,62 @@ void TaskMain(void *pvParameters) {
                 G_u8DeviceState++;
                 break;
 
-            case ST_GAMEMODE:                                           // выбор режима игры
-                tmp = setGameMode(G_u8GameMode);
-                if (tmp >= 0)
-                {
-                    G_u8GameMode = (modes) tmp;
-                    G_u8DeviceState++;
-                }
-                break;
-
-            case ST_CHECKPARS:                                          // контроль корректности настроек
-                // формирование настроек для выбранного режима игры
-                buildParameterList(G_u8GameMode, &param_list);
-
+            case ST_CHECKPARS:
+                // форматирование всех настроек
+                buildParameterList(&param_list);
                 log_i("buildParameterList OK !");
-
-                // загрузка настроек из Flash
-                if (param_list.load())
-                    G_u8DeviceState = ST_OLDPARS;                           // запрос на игру с параметрами предыдущего сеанса
-                else {
-                    // Если не корректны - установка значений по умолчанию, вывод сообщения
-                    // и переход на редактирование
+                if (!param_list.load()) {
                     showMsg("Incorrect parameters", " Editing required");
                     while (1);
                 }
+
+            case ST_GAMEMODE:                                           // выбор режима игры
+                tmp = setGameMode(G_u8GameMode);
+                if (tmp != EDIT_PARAMS)
+                {
+                    G_u8GameMode = (modes) tmp;
+                    G_u8DeviceState = ST_PARS2PLAY;
+                }
+                else {
+                    G_u8DeviceState = ST_EDIT_PARS;
+                }
+                //break;
+
+                //case ST_CHECKPARS:                                          // контроль корректности настроек
+
+
+                // загрузка настроек из Flash
+                //if (param_list.load())
+                    //G_u8DeviceState = ST_OLDPARS;                           // запрос на игру с параметрами предыдущего сеанса
+                //else {
+                    // Если не корректны - установка значений по умолчанию, вывод сообщения
+                    // и переход на редактирование
+                    //showMsg("Incorrect parameters", " Editing required");
+                    //while (1);
+                //}
                 break;
 
-            case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
+            /*case ST_OLDPARS:                                            // запрос на игру с параметрами предыдущего сеанса
                 tmp = dialogYesNo(" USED OLD SETTINGS? ");
-                if (DLG_NO == tmp)
+                if (DLG_NO == tmp) {
                     G_u8DeviceState = ST_EDIT_PARS;
-                else if (DLG_YES == tmp)
-                    G_u8DeviceState = ST_PARS2PLAY;
-                break;
+                }
+                else if (DLG_YES == tmp) {
+                    G_u8DeviceState = ST_GAMEMODE;
+                }
+                break;*/
 
             case ST_EDIT_PARS:                                          // редактирование параметров
-                G_u8DeviceState += EditParams(&param_list);
+                switch (EditParams(&param_list)) {
+                    case 0:
+                        break;
+                    case 1:
+                        G_u8DeviceState++;
+                        break;
+                    case 2:
+                        G_u8DeviceState = ST_GAMEMODE;
+                        break;
+                }
                 break;
 
             case ST_SAVEPARS:                                           // запрос на сохранение параметров во Flash
@@ -103,7 +123,9 @@ void TaskMain(void *pvParameters) {
                 if (DLG_NONE != tmp)
                 {
                     if (DLG_YES == tmp) param_list.store();
-                    G_u8DeviceState = ST_PARS2PLAY;
+                    /*if (G_u8GameMode == EDIT_PARAMS)*/
+                    G_u8DeviceState = ST_GAMEMODE;
+                    //else G_u8DeviceState = ST_PARS2PLAY;
                 }
                 break;
 
@@ -152,7 +174,7 @@ void loop() {}
 
 #pragma region ________________________________ WiFi_task
 
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
     espnow_event_t evt;
     evt.id_cb = ESPNOW_SEND_CB;
     evt.status = status;
@@ -163,10 +185,10 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 }
 
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const esp_now_recv_info_t *info, const uint8_t *incomingData, int len) {
     espnow_event_t evt;
 
-    if (mac == NULL || incomingData == NULL || len <= 0) {
+    if (incomingData == NULL || len <= 0) {
         log_e("Receive cb arg error");
         return;
     }
@@ -301,7 +323,7 @@ void TaskWiFi(void *pvParameters) {
                     switch (evt.id_cb) {
                         case ESPNOW_SEND_CB:
                             if (evt.status == ESP_NOW_SEND_SUCCESS) {
-                                log_i("ESP_NOW_SEND_SUCCESS");
+                                log_i("ESP_NOW_SEND_SUCCESS to peer %d", evt.msg.data[0]);
                                 send_evt.status |= MSG_SEND_OK;
                                 // if (evt.msg.cmd == PING)
                                 if (send_evt.msg.cmd == PING)
@@ -311,7 +333,7 @@ void TaskWiFi(void *pvParameters) {
                                     st++;
                             }
                             else {
-                                log_i("ESP_NOW SEND FAIL");
+                                log_i("ESP_NOW SEND FAIL to peer %d", send_evt.msg.data[0]);
                                 xTaskNotify(hTaskMain, NTF_SEND_FINAL, eSetBits);
                                 st = 1;
                             }
@@ -423,9 +445,9 @@ void TaskWiFi(void *pvParameters) {
 
 void setup(void) {
 
-    // Serial.begin(115200);
-
     log_i("Gamepad start.");
+
+    esp_task_wdt_deinit();
 
 // uint32_t sec;
 // int8_t t;
@@ -467,21 +489,12 @@ preferences.begin("my-app", true);
 
 
 
-    //lcd.init();
-    //lcd.backlight();
-
-    if (!SPIFFS.begin(true)) {
-        log_e("SPIFFS mount failed");
-        printTFTText("SPIFFS mount failed", 0, 20, true, false, TEUTONNORMAL36);
-    }
-
-    TFT_eSPI tft = TFT_eSPI();
-
     tft.init();
     tft.setRotation(3);
+
     clearScreen();
 
-    delay(100);
+    ONE_DIGIT_WIDTH = getTextWidth("0", STRING_FONT);
 
     // Allow allocation of all timers
     ESP32PWM::allocateTimer(0);
@@ -489,7 +502,7 @@ preferences.begin("my-app", true);
         // ESP32PWM::allocateTimer(2);
         // ESP32PWM::allocateTimer(3);
 
-    ledcSetup(BUZZER_PWM_CHANNEL, 1000, 8);
+    // ledcSetup(BUZZER_PWM_CHANNEL, 1000, 8);
     tone(BUZZER_PIN, 10, 50);
     delay(100);
 
@@ -498,7 +511,7 @@ preferences.begin("my-app", true);
     // индикация МАС адреса этого устройства
     if (kpd.getKey() != NO_KEY)
     {
-        printTFTText(WiFi.macAddress(), 0, 20, true, false, TEUTONNORMAL36);
+        printTFTText(WiFi.macAddress(), 0, 20, true, false, HEADER_FONT);
         //lcd.print(WiFi.macAddress());
         delay(60000);
     }
@@ -507,65 +520,6 @@ preferences.begin("my-app", true);
     redButton.begin();
     blueButton.read();
     redButton.read();
-
-    /*
-    byte bar1[8] = {
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-        B10000,
-    };
-    byte bar2[8] = {
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-        B11000,
-    };
-    byte bar3[8] = {
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-        B11100,
-    };
-    byte bar4[8] = {
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-        B11110,
-    };
-    byte bar5[8] = {
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-        B11111,
-    };
-
-    lcd.createChar(0, bar1);
-    lcd.createChar(1, bar2);
-    lcd.createChar(2, bar3);
-    lcd.createChar(3, bar4);
-    lcd.createChar(4, bar5);
-    */
 
 
 /*
@@ -598,14 +552,13 @@ preferences.begin("my-app", true);
     if (queue == NULL)
     {
         log_e("Create queue fail");
-        printTFTText("Create queue fail", 0, 20, true, false, TEUTONNORMAL36);
-        //lcd.print(F("Create queue fail"));
+        printTFTText("Create queue fail", 0, 20, true, false, STRING_FONT);
         while (1) {;}
         // return ESP_FAIL;
     }
 
-    //xTaskCreatePinnedToCore(TaskMain, "TaskMain", 20000, NULL, 1, &hTaskMain, 1);
-    //xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
+    xTaskCreatePinnedToCore(TaskMain, "TaskMain", 20000, NULL, 1, &hTaskMain, 1);
+    xTaskCreatePinnedToCore(TaskWiFi, "TaskWiFi", 20000, NULL, 2, &hTaskWiFi, 0);
 }
 
 #pragma endregion Setup_function

@@ -16,6 +16,9 @@
 #include "TimerExt.h"
 #include "message_esp_now.h"
 
+#include "fonts/teutonnormal20pt7b.h"
+#include "fonts/teutonnormal16pt7b.h"
+
 #pragma endregion Includes
 
 
@@ -70,22 +73,23 @@ char keys[ROW_NUM][COLUMN_NUM] = {
   {'*','0','#','D'}
 };
 
-const String TEUTONNORMAL36 = "teutonnormal36";
-const String TEUTONNORMAL68 = "teutonnormal68"; // тут шрифт с большой буквы
-const uint8_t TEUTONNORMAL36_H = 34; // высота в пикселях
-const uint8_t TEUTONNORMAL68_H = 62;
+//const String TEXT_FONT_FILE = "teutonnormal36";
+//const String HEADER_FONT_FILE = "Teutonnormal68"; // тут шрифт с большой буквы
 
-const uint8_t SPACE_H = 12; // пиксели между строк
+#define HEADER_FONT &teutonnormal20pt7b
+#define STRING_FONT &teutonnormal16pt7b
 
-#define HEADER_FONT TEUTONNORMAL68
-#define STRING_FONT TEUTONNORMAL36
+uint8_t TEXT_HEIGHT = *STRING_FONT.yAdvance;
+uint8_t HEADER_HEIGHT = *HEADER_FONT.yAdvance;
 
-#define HEADER_HEIGHT TEUTONNORMAL68_H
-#define STRING_HEIGHT TEUTONNORMAL36_H
+const uint8_t PADDING = 20;
+const uint8_t SPACE = 12; // пиксели между строк
+uint8_t ONE_DIGIT_WIDTH;
 
-const uint8_t HEADER_SPACE_H = TEUTONNORMAL68_H + SPACE_H;
-const uint8_t STRING_SPACE_H = TEUTONNORMAL36_H + SPACE_H;
+const uint8_t HEADER_SPACE_H = HEADER_HEIGHT + SPACE;
+const uint8_t STRING_SPACE_H = TEXT_HEIGHT + SPACE;
 
+const uint8_t RADIUS = TEXT_HEIGHT-SPACE*2; // радиус круга при выборе чего либо
 #define CENTER_BY_X true
 #define CENTER_BY_Y true
 
@@ -98,14 +102,19 @@ const uint8_t STRING_SPACE_H = TEUTONNORMAL36_H + SPACE_H;
 const uint16_t DISPLAY_WIDTH = 480;
 const uint16_t DISPLAY_HEIGHT = 320;
 
-const uint16_t PROGRESS_BAR_WIDTH = 420;
-const uint16_t PROGRESS_BAR_HEIGHT = 50;
+const uint8_t MAX_PROGRESS = 100;
 
-const uint16_t PROGRESS_BAR_X_POSITION = (DISPLAY_WIDTH-PROGRESS_BAR_WIDTH)/2;
-const uint16_t PROGRESS_BAR_Y_POSITION = HEADER_HEIGHT*2-PROGRESS_BAR_HEIGHT-SPACE_H/2;
+const uint16_t PROGRESS_BAR_WIDTH = DISPLAY_WIDTH-PADDING*2;
+const uint16_t PROGRESS_BAR_HEIGHT = TEXT_HEIGHT;
+
+const uint16_t PROGRESS_BAR_X_POSITION = PADDING;
+const uint16_t PROGRESS_BAR_Y_POSITION = PADDING+HEADER_SPACE_H+SPACE;
 
 #define DEFAULT_TEXT_COLOR TFT_WHITE
 #define CHOOSEN_TEXT_COLOR TFT_SILVER
+
+#define CIRCLE_COLOR TFT_WHITE
+#define BG_CIRCLE_COLOR TFT_BLACK
 
 #pragma endregion Constants
 
@@ -114,13 +123,13 @@ const uint16_t PROGRESS_BAR_Y_POSITION = HEADER_HEIGHT*2-PROGRESS_BAR_HEIGHT-SPA
 
 enum team_t {NOONE=0, RED, BLUE};
 
-enum modes {DOMIN, DOMIN_PRO, BOMB, CTRL_POINT};           // режимы
-const int8_t NUM_MODES = CTRL_POINT - DOMIN + 1;                  // число режимов
+enum modes {DOMIN, DOMIN_PRO, BOMB, CTRL_POINT, EDIT_PARAMS};           // режимы
+const int8_t NUM_MODES = EDIT_PARAMS - DOMIN + 1;                  // число режимов
 
 enum gstates_t {
     ST_GREET = 0,
-    ST_GAMEMODE,
     ST_CHECKPARS,
+    ST_GAMEMODE,
     ST_OLDPARS,
     ST_EDIT_PARS,
     ST_SAVEPARS,
@@ -148,15 +157,15 @@ const char *sPointNameStates[5]  = {
   //01234567890123456789
   //BLUE:
          "Disconnect    ",
-         "Player bad    ",
-         "Player busy   ",
-         "Player ready  ",
+         "Device bad    ",
+         "Device busy   ",
+         "Device ready  ",
          "Bad command   "
 };
 
 
 
-extern TFT_eSPI tft;
+TFT_eSPI tft = TFT_eSPI();
 //LiquidCrystal_I2C lcd(I2C_Addr_LCD, 20, LCD_ROWS);
 
 uint8_t pin_rows[ROW_NUM] = {14, 27, 26, 25};
