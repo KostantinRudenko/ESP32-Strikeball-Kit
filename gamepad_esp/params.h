@@ -202,23 +202,23 @@ class ListParameter {
         }
 
         void addIntParameter(const char *name, char aunit, uint8_t mlen, uint32_t value, uint32_t alo, uint32_t ahi) {
-            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(alo));
+            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(ahi));
         }
 
         void addIntParameter(const char *name, char aunit, uint8_t mlen, int16_t value, int16_t alo, int16_t ahi) {
-            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(alo));
+            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(ahi));
         }
 
         void addIntParameter(const char *name, char aunit, uint8_t mlen, uint16_t value, uint16_t alo, uint16_t ahi) {
-            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(alo));
+            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(ahi));
         }
 
         void addIntParameter(const char *name, char aunit, uint8_t mlen, int8_t value, int8_t alo, int8_t ahi) {
-            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(alo));
+            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(ahi));
         }
 
         void addIntParameter(const char *name, char aunit, uint8_t mlen, uint8_t value, uint8_t alo, uint8_t ahi) {
-            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(alo));
+            addIntParameter(name, aunit, mlen, static_cast<int32_t>(value), static_cast<int32_t>(alo), static_cast<int32_t>(ahi));
         }
 
         void addStringParameter(const char *name, char aunit, uint8_t mlen, const char *value) {
