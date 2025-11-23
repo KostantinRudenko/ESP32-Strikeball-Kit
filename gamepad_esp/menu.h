@@ -185,22 +185,22 @@ bool editIntParameter(Parameter *par) {
 
     switch (st) {
         case 0:
-			clearScreen();
+			      clearScreen();
             //lcd.clear();
             // имя параметра
             //lcd.print(par->getName());
 
             // мах длина значения параметра
             max_chars = par->getMaxLengtn();
-			log_d("Max chars: %d", max_chars);
+			      log_i("Max chars: %d", max_chars);
 
             // значение параметра
             inputString = String(par->getIntValue());
-			log_d("input string: %s", inputString);
+			      log_i("input string: %s", inputString);
             index = 0;
 
-			renderParameterView(par, inputString);
-			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            renderParameterView(par, inputString);
+            printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             st++;
             break;
@@ -218,12 +218,12 @@ bool editIntParameter(Parameter *par) {
 
                 if (++index > max_chars) {
                     index = 1;
-					inputString = String(key);
-				}
-				log_d("inputString: < %s > , index: < %d >", inputString, index);
+                    inputString = String(key);
+                  }
+            log_i("inputString: < %s > , index: < %d >", inputString, index);
 
-				clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
-				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
+            printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             }
             else if (key == 'D') {
