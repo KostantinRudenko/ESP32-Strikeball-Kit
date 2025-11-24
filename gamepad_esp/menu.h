@@ -676,7 +676,7 @@ bool pressAnyKey() {
             break;
 
         case 5:                                 // передача сообщения
-            if (true) { // TODO replace true to fEmpty
+            if (fEmpty) { // TODO replace true to fEmpty
                 st = 0;
                 return true;
             }
