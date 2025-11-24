@@ -185,22 +185,19 @@ bool editIntParameter(Parameter *par) {
 
     switch (st) {
         case 0:
-			clearScreen();
-            //lcd.clear();
-            // имя параметра
-            //lcd.print(par->getName());
+			      clearScreen();
 
             // мах длина значения параметра
             max_chars = par->getMaxLengtn();
-			log_d("Max chars: %d", max_chars);
+			      log_i("Max chars: %d", max_chars);
 
             // значение параметра
             inputString = String(par->getIntValue());
-			log_d("input string: %s", inputString);
+			      log_i("input string: %s", inputString);
             index = 0;
 
-			renderParameterView(par, inputString);
-			printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            renderParameterView(par, inputString);
+            printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             st++;
             break;
@@ -218,12 +215,12 @@ bool editIntParameter(Parameter *par) {
 
                 if (++index > max_chars) {
                     index = 1;
-					inputString = String(key);
-				}
-				log_d("inputString: < %s > , index: < %d >", inputString, index);
+                    inputString = String(key);
+                  }
+            log_i("inputString: < %s > , index: < %d >", inputString, index);
 
-				clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
-				printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+            clearSpace(PADDING, PADDING+HEADER_SPACE_H, ONE_DIGIT_WIDTH*5, STRING_SPACE_H+SPACE, TFT_BLACK);
+            printTFTText(inputString, PADDING, PADDING+HEADER_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
             }
             else if (key == 'D') {
@@ -233,7 +230,6 @@ bool editIntParameter(Parameter *par) {
                     par->setValue(inputString.toInt());
                     par->isValidRange();
                 }
-                //lcd.noBlink();
                 st = 0;
                 return true;
             }
@@ -463,20 +459,13 @@ int8_t EditParams(ListParameter* params) {
             break;
 
         case 1:                           // отрисовка страницы имен параметров
-            //lcd.clear();
             clearScreen();
             page = cur / paramChoosingPageSize;
             for (uint8_t row = 0; row < paramChoosingPageSize; row++) {
                 if ((page*paramChoosingPageSize + row) < NUMS) {
-                    //lcd.setCursor(1, row);
-                    //lcd.print(params->parameters[page*LCD_ROWS + row]->getName());
                     printTFTText(params->parameters[page*paramChoosingPageSize + row]->getName(), RADIUS*2+SPACE, row*STRING_SPACE_H, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
                 }
             }
-
-            // draw cursor in current position
-            //lcd.setCursor(0, cur % LCD_ROWS);
-            //lcd.write('>');
 			renderLines(cur, prev_cur);
             st++;
             break;
@@ -500,10 +489,6 @@ int8_t EditParams(ListParameter* params) {
                     break;
                 }
 
-                // clear cursor in current position
-                //lcd.setCursor(0, cur % LCD_ROWS);
-                //lcd.write(' ');
-
                 // change current position
                 if ('A' == key) {                               // A - up
                     cur = cur ? cur - 1 : NUMS - 1;
@@ -517,13 +502,8 @@ int8_t EditParams(ListParameter* params) {
 				renderLines(cur, prev_cur);
 
                 if (page != cur / paramChoosingPageSize) {
-                    // page not change - draw cursor in new position on the
-                    //lcd.setCursor(0, cur % LCD_ROWS);
-                    //lcd.write('>');
                     st--;                                       // change page
-                }
-                //else
-                    //st--;                                       // change page
+                }                               // change page
             }
             break;
 
@@ -568,12 +548,6 @@ uint8_t dialogYesNo(String question) {
   if (st == 0)
   {
     clearScreen();
-    //lcd.clear();
-    //lcd.setCursor(0, 1);
- //         //"01234567890123456789"
-    //lcd.print(question);
-    //lcd.setCursor(0, 3);
-    //lcd.print("[*] - NO   [#] - YES");
 	printTFTText(question, NO_X, DISPLAY_HEIGHT/2-HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 	printTFTText("[*] - NO  [#] - YES", NO_X, DISPLAY_HEIGHT/2+HEADER_SPACE_H, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 
@@ -702,7 +676,7 @@ bool pressAnyKey() {
             break;
 
         case 5:                                 // передача сообщения
-            if (true) { // TODO replace true to fEmpty
+            if (fEmpty) { // TODO replace true to fEmpty
                 st = 0;
                 return true;
             }
