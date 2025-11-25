@@ -396,6 +396,9 @@ bool Domination(ListParameter* params, team_t* winner) {
                 Button*   armingTeamButton;
                 uint8_t   armingTeamNumber;
 
+                progressRed = 0;
+                progressBlue = 0;
+
                 if (isButtonPressed(&redButton)) {
                   armingTeamProgress = &progressRed;
                   timePress = &time_press_red;
