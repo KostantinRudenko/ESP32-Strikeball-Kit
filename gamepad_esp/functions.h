@@ -164,12 +164,10 @@ void parseMessage(espnow_event_t* send_event, espnow_msg_t* recv_msg) {
                 G_arPeerStatus[point] = recv_msg->data[1];      // если сообщение принято
         }
         // отрисовка состояния точки
-		if (xTaskGetTickCount() - tm > 3000) {
 			printTFTText(sPointNameStates[G_arPeerStatus[point]],
 						 NO_X, HEADER_SPACE_H+STRING_SPACE_H*(point+1),
 						 CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
 			tm = xTaskGetTickCount();
-		}
     }
 }
 
