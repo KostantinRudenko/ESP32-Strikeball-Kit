@@ -458,6 +458,11 @@ bool Domination(ListParameter* params, team_t* winner) {
                     log_i("Button released");
                     *armingTeamProgress = 0;
                     clearSpace(0, PROGRESS_BAR_Y_POSITION, DISPLAY_WIDTH, PROGRESS_BAR_HEIGHT, TFT_BLACK);
+                    ledMsg.cmd = WAITING;
+                    ledMsg.data[0] = 2;
+                    ledMsg.data[1] = G_u8Team;
+                    if (!q_out_msg.push(&ledMsg))
+                      log_e("Error: q_out_msg is full");
                     break;
                   }
                 } while (*armingTeamProgress < MAX_PROGRESS);
