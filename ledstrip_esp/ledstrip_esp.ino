@@ -126,7 +126,7 @@ uint32_t armingTime = 10000; // Время на arming/disarming
 
 uint8_t sirenState = WaitingForCmd;
 
-bool isSirenActive;
+bool isSirenActive = false;
 uint32_t sirenTm;
 
 #pragma endregion ________________________________ SirenVariables
@@ -265,19 +265,21 @@ void useLedStrip() {
       if (disarming())
           ledState = WaitingForCmd;
       break;
-    
-    switch (sirenState) {
+  }
+
+  switch (sirenState) {
       case SirenStartSound:
-        if (isSirenActive) {
+        if (!isSirenActive) {
           isSirenActive = true;
           sirenTm = millis();
+          log_i("Siren ON");
         }
         if (turnOnSirenForTime(sirenTm, SIREN_START_TIME)) {
           sirenState = WaitingForCmd;
           isSirenActive = false;
+          log_i("Siren OFF");
         }
         break;
-    }
   }
 }
 #pragma endregion Functions
@@ -339,13 +341,14 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
         return true;    
     }
 
-    if (rec_msg->cmd > 2) {
+    if (rec_msg->cmd > 2 && rec_msg->cmd < 6) {
       ledState = rec_msg->cmd;
       curTeam  = rec_msg->data[1];
       log_i("Led state: %d, Current team: %d", ledState, curTeam);
     }
     else if (rec_msg->cmd > 5) {
       sirenState = rec_msg->cmd;
+      log_i("siren state: %d", sirenState);
     }
 
     return false; 
