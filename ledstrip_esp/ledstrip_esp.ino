@@ -40,6 +40,8 @@ const uint8_t NTF_SEND_FAIL_WIFI  = 0b00001000;
 
 #define NOT_CLEAR    false
 
+#define SIREN_START_TIME 3000
+
 #pragma endregion Constants
 
 #pragma region ________________________________ Variables
@@ -56,13 +58,12 @@ enum task_wifi_states_t {
   ST_WIFI_ERROR
 };
 
-enum Commands {
+enum States {
   Ping = 1,                 // сканирование
   WaitingForCmd = 3,
   Arming,
   Disarming,
-  PointArmed,
-  StopLed
+  SirenStartSound = 6
 };
 
 enum Teams {
@@ -120,6 +121,15 @@ bool isInProcess = false; // для arming/disarming
 uint32_t armingTime = 10000; // Время на arming/disarming
 
 #pragma endregion LedVariables
+
+#pragma region SirenVariables
+
+uint8_t sirenState = WaitingForCmd;
+
+bool isSirenActive = false;
+uint32_t sirenTm;
+
+#pragma endregion ________________________________ SirenVariables
 
 #pragma region ________________________________ Functions
 
@@ -226,6 +236,17 @@ bool disarming() {
   return false;
 }
 
+bool turnOnSirenForTime(uint32_t& startTime, const uint16_t& startSignalTime) {
+  if (millis() - startTime > startSignalTime) {
+    digitalWrite(SIREN_PIN, LOW);
+    return true;
+  }
+  else {
+    digitalWrite(SIREN_PIN, HIGH);
+    return false;
+  }
+}
+
 void useLedStrip() {
   switch (ledState) {
     case WaitingForCmd:
@@ -244,11 +265,21 @@ void useLedStrip() {
       if (disarming())
           ledState = WaitingForCmd;
       break;
-    case PointArmed:
-      isInProcess = false;
-      ledState = WaitingForCmd;
-      log_i("stopped progressing");
-      break;
+  }
+
+  switch (sirenState) {
+      case SirenStartSound:
+        if (!isSirenActive) {
+          isSirenActive = true;
+          sirenTm = millis();
+          log_i("Siren ON");
+        }
+        if (turnOnSirenForTime(sirenTm, SIREN_START_TIME)) {
+          sirenState = WaitingForCmd;
+          isSirenActive = false;
+          log_i("Siren OFF");
+        }
+        break;
   }
 }
 #pragma endregion Functions
@@ -310,10 +341,14 @@ bool parseMessage(msg_esp_now_t* rec_msg, msg_esp_now_t* ack_msg) {
         return true;    
     }
 
-    if (rec_msg->cmd > 2) {
+    if (rec_msg->cmd > 2 && rec_msg->cmd < 6) {
       ledState = rec_msg->cmd;
       curTeam  = rec_msg->data[1];
       log_i("Led state: %d, Current team: %d", ledState, curTeam);
+    }
+    else if (rec_msg->cmd > 5) {
+      sirenState = rec_msg->cmd;
+      log_i("siren state: %d", sirenState);
     }
 
     return false; 
@@ -466,6 +501,8 @@ void setup() {
     FastLED.show();
 
     log_i("Inited led Strip");
+
+    pinMode(SIREN_PIN, OUTPUT);
 
     G_sThisDeviceMAC = WiFi.macAddress();
     MacStringToByteArray(G_sThisDeviceMAC, G_aru8ThisDeviceMAC);

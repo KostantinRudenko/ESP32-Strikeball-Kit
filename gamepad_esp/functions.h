@@ -370,9 +370,14 @@ bool Domination(ListParameter* params, team_t* winner) {
             if (!q_out_msg.push(&ledMsg))
                 log_e("Error: q_out_msg is full");
 
-            printTFTText(getTimeHMS(secs), NO_X, PADDING + HEADER_SPACE_H + PROGRESS_BAR_HEIGHT + SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
-            printTFTText(team_names[RED], PADDING, PADDING + HEADER_SPACE_H + STRING_SPACE_H + PROGRESS_BAR_HEIGHT + SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            printTFTText(team_names[BLUE], PADDING, PADDING + HEADER_SPACE_H * 2 + STRING_SPACE_H + PROGRESS_BAR_HEIGHT + SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			ledMsg.cmd = SIREN_START_SOUND;
+			ledMsg.data[0] = 2;
+			if (!q_out_msg.push(&ledMsg))
+				log_e("Error: q_out_msg is full");
+
+			printTFTText(getTimeHMS(secs), NO_X, PADDING+HEADER_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, CENTER_BY_X, NOT_CENTER_BY_Y, STRING_FONT);
+			printTFTText(team_names[RED], PADDING, PADDING+HEADER_SPACE_H+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
+			printTFTText(team_names[BLUE], PADDING, PADDING+HEADER_SPACE_H*2+STRING_SPACE_H+PROGRESS_BAR_HEIGHT+SPACE, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
 
             printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
