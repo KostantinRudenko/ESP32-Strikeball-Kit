@@ -527,6 +527,7 @@ bool Domination(ListParameter* params, team_t* winner) {
             ledMsg.cmd = WAITING;
             ledMsg.data[1] = G_u8Team;
             if (!q_out_msg.push(&ledMsg)) log_e("Error: q_out_msg is full");
+            if (!q_out_msg.push(&ledMsg)) log_e("Error: q_out_msg is full");
 
             RenderStaticView();
             st = 5;
