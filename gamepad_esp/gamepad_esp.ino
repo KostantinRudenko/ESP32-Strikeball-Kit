@@ -240,7 +240,7 @@ bool connectToWiFi() {
         // Add peer
         if (esp_now_add_peer(&peerInfo) != ESP_OK) {
             log_e("Failed to add peer %d", peer);
-            return false;
+            //return false;
         }
     }
 
