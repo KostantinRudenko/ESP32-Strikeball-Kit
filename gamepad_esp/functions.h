@@ -570,7 +570,7 @@ bool Domination(ListParameter* params, team_t* winner) {
             game_timer.Stop();
             printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            st = 5;
+            st = 6;
         } else {
             if (game_timer.Secs() != secs) {
                 secs = game_timer.Secs();
