@@ -527,6 +527,7 @@ bool Domination(ListParameter* params, team_t* winner) {
             ledMsg.cmd = WAITING;
             ledMsg.data[1] = G_u8Team;
             if (!q_out_msg.push(&ledMsg)) log_e("Error: q_out_msg is full");
+            if (!q_out_msg.push(&ledMsg)) log_e("Error: q_out_msg is full");
 
             RenderStaticView();
             st = 5;
@@ -570,7 +571,7 @@ bool Domination(ListParameter* params, team_t* winner) {
             game_timer.Stop();
             printTFTText(getTimeHMS(timerRed.Secs()), teamTimerPositionX, redTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
             printTFTText(getTimeHMS(timerBlue.Secs()), teamTimerPositionX, blueTimerPositionY, NOT_CENTER_BY_X, NOT_CENTER_BY_Y, HEADER_FONT);
-            st = 5;
+            st = 6;
         } else {
             if (game_timer.Secs() != secs) {
                 secs = game_timer.Secs();
